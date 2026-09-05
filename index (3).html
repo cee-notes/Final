@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="NEXUS — Modern digital solutions. A fully functional website powered by GitHub Pages and Google Apps Script." />
+  <meta name="theme-color" content="#2563eb" />
+  <title>NEXUS | Digital Solutions</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ============================================================
+       NAVBAR
+  ============================================================ -->
+  <nav class="navbar" id="navbar">
+    <div class="container nav-container">
+      <a href="#home" class="nav-logo">NEXUS<span>.</span></a>
+
+      <ul class="nav-menu" id="nav-menu">
+        <li class="nav-item"><a href="#home" class="nav-link active">Home</a></li>
+        <li class="nav-item"><a href="#features" class="nav-link">Features</a></li>
+        <li class="nav-item"><a href="#about" class="nav-link">About</a></li>
+        <li class="nav-item"><a href="#contact" class="nav-link">Contact</a></li>
+        <li class="nav-item nav-cta-mobile"><a href="#contact" class="btn btn-primary btn-sm">Get Started</a></li>
+      </ul>
+
+      <a href="#contact" class="btn btn-primary btn-sm nav-cta">Get Started</a>
+
+      <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ============================================================
+       HERO
+  ============================================================ -->
+  <header class="hero" id="home">
+    <div class="hero-glow hero-glow-1"></div>
+    <div class="hero-glow hero-glow-2"></div>
+
+    <div class="container hero-container">
+      <div class="hero-content">
+        <span class="hero-badge reveal">Free hosting &middot; GitHub Pages + Apps Script</span>
+        <h1 class="hero-title reveal">
+          Build. Deploy.<br />
+          Go <span class="gradient-text">Fully Functional</span>.
+        </h1>
+        <p class="hero-subtitle reveal">
+          A complete, production-ready website with a working backend.
+          The contact form saves every message straight into your Google Sheet —
+          no server, no monthly bills, 100% free forever.
+        </p>
+        <div class="hero-actions reveal">
+          <a href="#contact" class="btn btn-primary btn-lg">Send a Message</a>
+          <a href="#features" class="btn btn-outline btn-lg">Explore Features</a>
+        </div>
+        <div class="hero-stats reveal">
+          <div class="hero-stat">
+            <span class="stat-number" data-count="100">0</span><span class="stat-suffix">%</span>
+            <span class="stat-label">Free Stack</span>
+          </div>
+          <div class="hero-stat">
+            <span class="stat-number" data-count="99">0</span><span class="stat-suffix">.9%</span>
+            <span class="stat-label">Uptime</span>
+          </div>
+          <div class="hero-stat">
+            <span class="stat-number" data-count="24">0</span><span class="stat-suffix">/7</span>
+            <span class="stat-label">Online</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-visual reveal">
+        <div class="code-card">
+          <div class="code-card-header">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-yellow"></span>
+            <span class="dot dot-green"></span>
+            <span class="code-card-title">fully-functional.js</span>
+          </div>
+          <pre class="code-card-body"><code><span class="c-key">const</span> <span class="c-var">site</span> = {
+  frontend: <span class="c-str">"GitHub Pages"</span>,
+  backend:  <span class="c-str">"Apps Script"</span>,
+  database: <span class="c-str">"Google Sheets"</span>,
+  cost:     <span class="c-num">0</span>,
+  status:   <span class="c-str">"LIVE"</span>
+};</code></pre>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============================================================
+       FEATURES
+  ============================================================ -->
+  <section class="section" id="features">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="section-tag">Features</span>
+        <h2 class="section-title">Everything Works Out of the Box</h2>
+        <p class="section-subtitle">
+          Frontend, backend and database are already wired together.
+          Paste, deploy and the website is live and functional.
+        </p>
+      </div>
+
+      <div class="features-grid">
+        <article class="feature-card reveal">
+          <div class="feature-icon icon-blue">&#123;</div>
+          <h3>Static Frontend</h3>
+          <p>Pure HTML, CSS and JavaScript hosted on GitHub Pages. No build step, no framework lock-in — edit any file and push to update instantly.</p>
+        </article>
+
+        <article class="feature-card reveal">
+          <div class="feature-icon icon-green">GS</div>
+          <h3>Apps Script Backend</h3>
+          <p>A Google Apps Script Web App acts as your free REST API. It receives form submissions and responds with clean JSON to the website.</p>
+        </article>
+
+        <article class="feature-card reveal">
+          <div class="feature-icon icon-amber">DB</div>
+          <h3>Google Sheets Database</h3>
+          <p>Every contact message is appended to a Google Sheet with a timestamp — a free, reliable database you can open, filter and export anytime.</p>
+        </article>
+
+        <article class="feature-card reveal">
+          <div class="feature-icon icon-violet">&#9993;</div>
+          <h3>Email Notifications</h3>
+          <p>Optionally receive an email alert for every new submission, so you never miss a lead. Enable it with one line in the backend config.</p>
+        </article>
+
+        <article class="feature-card reveal">
+          <div class="feature-icon icon-rose">&#9679;</div>
+          <h3>Responsive Design</h3>
+          <p>The layout adapts perfectly to phones, tablets and desktops, with a mobile hamburger menu and smooth scrolling navigation.</p>
+        </article>
+
+        <article class="feature-card reveal">
+          <div class="feature-icon icon-cyan">&#9635;</div>
+          <h3>Zero-Cost Security</h3>
+          <p>The spreadsheet stays private, the Web App is protected by Google, and input validation runs on both the client and the server side.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       ABOUT
+  ============================================================ -->
+  <section class="section section-alt" id="about">
+    <div class="container about-container">
+      <div class="about-content reveal">
+        <span class="section-tag">About</span>
+        <h2 class="section-title">A Full Website Without a Server Bill</h2>
+        <p>
+          This project combines three free Google and GitHub services into one
+          fully functional product. GitHub Pages serves the static website
+          worldwide over HTTPS, while a Google Apps Script deployment works as
+          the backend API endpoint.
+        </p>
+        <p>
+          When a visitor submits the contact form, the browser sends the data to
+          your Apps Script Web App, which validates it and stores it in a Google
+          Sheet that only you can see. The whole pipeline takes milliseconds and
+          requires no servers to maintain, no SSL certificates to renew and no
+          hosting fees to pay.
+        </p>
+        <ul class="about-list">
+          <li>Deploy in under 10 minutes by copying and pasting</li>
+          <li>Unlimited visitors on GitHub Pages hosting</li>
+          <li>Every submission stored safely in your own Google account</li>
+          <li>Easy to customize — every section is clearly commented</li>
+        </ul>
+      </div>
+
+      <div class="about-panel reveal">
+        <div class="about-panel-row"><span>Frontend</span><strong>GitHub Pages</strong></div>
+        <div class="about-panel-row"><span>Backend</span><strong>Apps Script</strong></div>
+        <div class="about-panel-row"><span>Database</span><strong>Google Sheets</strong></div>
+        <div class="about-panel-row"><span>Hosting cost</span><strong class="accent">$0 / month</strong></div>
+        <div class="about-panel-row"><span>Setup time</span><strong>&asymp; 10 minutes</strong></div>
+        <div class="about-panel-row"><span>Maintenance</span><strong>None</strong></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       CONTACT
+  ============================================================ -->
+  <section class="section" id="contact">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="section-tag">Contact</span>
+        <h2 class="section-title">Send Us a Message</h2>
+        <p class="section-subtitle">
+          This form is already connected to your Google Apps Script backend.
+          Every message lands directly in your Google Sheet.
+        </p>
+      </div>
+
+      <div class="contact-container">
+        <div class="contact-info reveal">
+          <div class="contact-card">
+            <div class="contact-card-icon icon-blue">&#9993;</div>
+            <div>
+              <h4>Email</h4>
+              <p>hello@example.com</p>
+            </div>
+          </div>
+          <div class="contact-card">
+            <div class="contact-card-icon icon-green">&#9742;</div>
+            <div>
+              <h4>Phone</h4>
+              <p>+1 (555) 000-0000</p>
+            </div>
+          </div>
+          <div class="contact-card">
+            <div class="contact-card-icon icon-amber">&#8962;</div>
+            <div>
+              <h4>Location</h4>
+              <p>Remote &mdash; Worldwide</p>
+            </div>
+          </div>
+          <div class="contact-card">
+            <div class="contact-card-icon icon-violet">&#9200;</div>
+            <div>
+              <h4>Response Time</h4>
+              <p>Within 24 hours</p>
+            </div>
+          </div>
+        </div>
+
+        <form class="contact-form reveal" id="contact-form" novalidate>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="name">Name <span class="required">*</span></label>
+              <input type="text" id="name" name="name" placeholder="Your full name" maxlength="80" required />
+              <small class="error-msg" data-error-for="name"></small>
+            </div>
+            <div class="form-group">
+              <label for="email">Email <span class="required">*</span></label>
+              <input type="email" id="email" name="email" placeholder="you@example.com" maxlength="120" required />
+              <small class="error-msg" data-error-for="email"></small>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="subject">Subject</label>
+            <input type="text" id="subject" name="subject" placeholder="What is this about?" maxlength="150" />
+          </div>
+
+          <div class="form-group">
+            <label for="message">Message <span class="required">*</span></label>
+            <textarea id="message" name="message" rows="5" placeholder="Write your message here..." maxlength="2000" required></textarea>
+            <small class="error-msg" data-error-for="message"></small>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-lg btn-block" id="submit-btn">
+            <span class="btn-text">Send Message</span>
+            <span class="btn-loader" hidden></span>
+          </button>
+
+          <p class="form-note" id="form-note"></p>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       FOOTER
+  ============================================================ -->
+  <footer class="footer">
+    <div class="container footer-container">
+      <div class="footer-brand">
+        <a href="#home" class="nav-logo">NEXUS<span>.</span></a>
+        <p>A fully functional website powered by GitHub Pages and Google Apps Script.</p>
+      </div>
+      <div class="footer-links">
+        <h4>Quick Links</h4>
+        <a href="#home">Home</a>
+        <a href="#features">Features</a>
+        <a href="#about">About</a>
+        <a href="#contact">Contact</a>
+      </div>
+      <div class="footer-links">
+        <h4>Resources</h4>
+        <a href="https://pages.github.com" target="_blank" rel="noopener">GitHub Pages</a>
+        <a href="https://script.google.com" target="_blank" rel="noopener">Apps Script</a>
+        <a href="https://sheets.google.com" target="_blank" rel="noopener">Google Sheets</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="container">
+        <p>&copy; <span id="year"></span> NEXUS. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Toast notification -->
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
