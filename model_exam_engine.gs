@@ -13,7 +13,7 @@
  * - Physics: 50 questions (25%) - Class 11 & 12 NEB syllabus
  * - Chemistry: 50 questions (25%) - Class 11 & 12 NEB syllabus
  * - Biology: 80 questions (40%) - Botany & Zoology, Class 11 & 12
- * - English: 20 questions (10%) - Grammar, Vocabulary, Comprehension
+ * - MAT: 20 questions (10%)
  * ============================================================================
  */
 
@@ -30,7 +30,7 @@ const MODEL_EXAM_CONFIG = {
     PHYSICS:   { marks: 50, questions: 50, percentage: 25 },
     CHEMISTRY: { marks: 50, questions: 50, percentage: 25 },
     BIOLOGY:   { marks: 80, questions: 80, percentage: 40 },
-    ENGLISH:   { marks: 20, questions: 20, percentage: 10 }
+    MAT:   { marks: 20, questions: 20, percentage: 10 }
   },
   
   // Chapter-wise breakdown for each subject (NEB Class 11 & 12)
@@ -56,11 +56,7 @@ const MODEL_EXAM_CONFIG = {
       'Zoology - Reproduction': 8,       // Human reproduction, Embryology
       'Zoology - Evolution & Ecology': 7 // Evolution, Ecosystem, Conservation
     },
-    ENGLISH: {
-      'Grammar': 8,              // Tenses, Articles, Prepositions, Voice
-      'Vocabulary': 6,           // Synonyms, Antonyms, Idioms
-      'Comprehension': 6         // Reading passages, Inference
-    }
+    MAT
   }
 };
 
@@ -86,7 +82,7 @@ function generateModelExamSet() {
   
   // Build question pools by Subject and Chapter
   const pools = {
-    PHYSICS: {}, CHEMISTRY: {}, BIOLOGY: {}, ENGLISH: {}
+    PHYSICS: {}, CHEMISTRY: {}, BIOLOGY: {}, MAT: {}
   };
   
   // Column mapping (adjust based on your sheet structure)
@@ -107,7 +103,7 @@ function generateModelExamSet() {
     if (subject.includes('PHYS')) subject = 'PHYSICS';
     else if (subject.includes('CHEM')) subject = 'CHEMISTRY';
     else if (subject.includes('BIO') || subject.includes('ZOO') || subject.includes('BOT')) subject = 'BIOLOGY';
-    else if (subject.includes('ENG') || subject.includes('ENGLISH')) subject = 'ENGLISH';
+    else if (subject.includes('ENG') || subject.includes('MAT')) subject = 'MAT';
     else return; // Skip unrecognized subjects
     
     if (!pools[subject][chapter]) {
@@ -337,7 +333,7 @@ function saveExamResult_(email, score, correct, wrong, unattempted, subjectWise)
       'Physics_Correct', 'Physics_Wrong',
       'Chemistry_Correct', 'Chemistry_Wrong',
       'Biology_Correct', 'Biology_Wrong',
-      'English_Correct', 'English_Wrong',
+      'MAT_Correct', 'MAT_Wrong',
       'Grade', 'Remark'
     ]);
   }
@@ -355,7 +351,7 @@ function saveExamResult_(email, score, correct, wrong, unattempted, subjectWise)
     (sw.PHYSICS || {}).correct || 0, (sw.PHYSICS || {}).wrong || 0,
     (sw.CHEMISTRY || {}).correct || 0, (sw.CHEMISTRY || {}).wrong || 0,
     (sw.BIOLOGY || {}).correct || 0, (sw.BIOLOGY || {}).wrong || 0,
-    (sw.ENGLISH || {}).correct || 0, (sw.ENGLISH || {}).wrong || 0,
+    (sw.MAT || {}).correct || 0, (sw.MAT || {}).wrong || 0,
     grading.grade, grading.remark
   ]);
 }
@@ -366,7 +362,7 @@ function seedDemoQuestions_(sheet) {
     ['q-1', 'Physics', 'Mechanics', 'Kinematics', 'A body starts from rest and accelerates uniformly at 2 m/s². What is its velocity after 5 seconds?', '5 m/s', '10 m/s', '15 m/s', '20 m/s', 1, 'v = u + at = 0 + 2×5 = 10 m/s', 'Easy'],
     ['q-2', 'Chemistry', 'Physical Chemistry', 'Stoichiometry', 'What is the molar mass of water (H₂O)?', '16 g/mol', '18 g/mol', '20 g/mol', '22 g/mol', 1, 'H₂O = 2(1) + 16 = 18 g/mol', 'Easy'],
     ['q-3', 'Biology', 'Zoology - Human Physiology', 'Digestive System', 'Which enzyme breaks down proteins in the stomach?', 'Amylase', 'Lipase', 'Pepsin', 'Trypsin', 2, 'Pepsin is the main gastric protease', 'Easy'],
-    ['q-4', 'English', 'Grammar', 'Tenses', 'Choose the correct form: She ___ to school every day.', 'go', 'goes', 'going', 'gone', 1, 'Third person singular requires -s', 'Easy']
+    ['q-4', 'MAT', 'Grammar', 'Tenses', 'Choose the correct form: She ___ to school every day.', 'go', 'goes', 'going', 'gone', 1, 'Third person singular requires -s', 'Easy']
   ];
   
   // Duplicate to have enough for testing
