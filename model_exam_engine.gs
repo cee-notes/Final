@@ -5,7 +5,7 @@
  * ============================================================================
  * EXAM PATTERN:
  * - Total Marks: 200
- * - Duration: 120 minutes (2 hours)
+ * - Duration: 180 minutes (2 hours)
  * - Questions: 200 MCQs (1 mark each)
  * - Negative Marking: 0.25 per wrong answer
  * 
@@ -21,7 +21,7 @@
 const MODEL_EXAM_CONFIG = {
   TOTAL_MARKS: 200,
   TOTAL_QUESTIONS: 200,
-  DURATION_MINUTES: 120, // Exact time for CEE
+  DURATION_MINUTES: 180, // Exact time for CEE
   MARKS_PER_QUESTION: 1,
   NEGATIVE_MARKING: 0.25,
   
