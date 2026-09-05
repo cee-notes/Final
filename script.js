@@ -12,7 +12,7 @@
    https://script.google.com/macros/s/AKfycb.../exec
    ============================================================ */
 const CONFIG = {
-  SCRIPT_URL: "PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE",
+  SCRIPT_URL: "https://script.google.com/macros/s/AKfycbwvTRR32wLS1-oncHDP2QFypVIziRmsnDi16bJ_Cyhwnc64pK722P4PuzgEF39AbwL7/exec",
   REQUEST_TIMEOUT_MS: 20000
 };
 
