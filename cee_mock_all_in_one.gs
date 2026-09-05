@@ -1244,6 +1244,84 @@ function deleteRowById_(name, id){
    ============================================================================ */
 function nowISO_(){ return new Date().toISOString(); }
 
+/* ============================================================================
+   ID GENERATION HELPERS - Custom formats per entity type
+   ========================================================================== */
+function getNextQuestionId_(section){
+  var sh = getTab_('Questions');
+  var lastRow = sh.getLastRow();
+  if(lastRow < 2) return getInitialQuestionId_(section);
+  
+  var prefix = getQuestionPrefix_(section);
+  var allIds = sh.getRange(2, 1, lastRow - 1, 1).getValues().map(function(r){ return String(r[0]); });
+  var maxNum = 0;
+  for(var i = 0; i < allIds.length; i++){
+    var id = allIds[i];
+    if(id.indexOf(prefix) === 0){
+      var numStr = id.substring(prefix.length);
+      var num = parseInt(numStr, 10);
+      if(!isNaN(num) && num > maxNum) maxNum = num;
+    }
+  }
+  return prefix + padNumber_(maxNum + 1, 4);
+}
+
+function getQuestionPrefix_(section){
+  var sec = String(section || '').toUpperCase();
+  if(sec.indexOf('PHYS') >= 0 || sec === 'P' || sec === 'P1' || sec === 'P2' || sec === 'P3' || sec === 'P4') return 'QP-';
+  if(sec.indexOf('CHEM') >= 0 || sec === 'C' || sec === 'C1' || sec === 'C2' || sec === 'C3' || sec === 'C4' || sec === 'C5') return 'QC-';
+  if(sec.indexOf('BIOL') >= 0 || sec === 'B' || sec === 'BOTANY' || sec === 'ZOOLOGY' || sec === 'Z1' || sec === 'Z2' || sec === 'Z3' || sec === 'B1' || sec === 'B2' || sec === 'B3') return 'QB-';
+  if(sec.indexOf('ENG') >= 0 || sec === 'E' || sec === 'ENGLISH') return 'QE-';
+  return 'Q-';
+}
+
+function getNextStudentId_(){
+  var sh = getTab_('Users');
+  var lastRow = sh.getLastRow();
+  if(lastRow < 2) return 'S-20010';
+  
+  var allIds = sh.getRange(2, 1, lastRow - 1, 1).getValues().map(function(r){ return String(r[0]); });
+  var maxNum = 20009;
+  for(var i = 0; i < allIds.length; i++){
+    var id = allIds[i];
+    if(id.indexOf('S-') === 0){
+      var numStr = id.substring(2);
+      var num = parseInt(numStr, 10);
+      if(!isNaN(num) && num > maxNum) maxNum = num;
+    }
+  }
+  return 'S-' + (maxNum + 1);
+}
+
+function getNextTeacherId_(){
+  var sh = getTab_('Users');
+  var lastRow = sh.getLastRow();
+  if(lastRow < 2) return 'T-001';
+  
+  var allIds = sh.getRange(2, 1, lastRow - 1, 1).getValues().map(function(r){ return String(r[0]); });
+  var maxNum = 0;
+  for(var i = 0; i < allIds.length; i++){
+    var id = allIds[i];
+    if(id.indexOf('T-') === 0){
+      var numStr = id.substring(2);
+      var num = parseInt(numStr, 10);
+      if(!isNaN(num) && num > maxNum) maxNum = num;
+    }
+  }
+  return 'T-' + padNumber_(maxNum + 1, 3);
+}
+
+function getInitialQuestionId_(section){
+  var prefix = getQuestionPrefix_(section);
+  return prefix + '0001';
+}
+
+function padNumber_(num, digits){
+  var str = String(num);
+  while(str.length < digits) str = '0' + str;
+  return str;
+}
+
 function uid_(){ return Utilities.getUuid(); }
 
 function err_(msg, code){
@@ -1424,7 +1502,7 @@ function register(name, email, username, password){
     if(String(password || '').length < 6) throw err_('Password must be at least 6 characters.');
     if(getUserByEmail_(email)) throw err_('An account with this email already exists.');
     if(readTab_('Users').some(function(u){ return String(u.Username) === username; })) throw err_('This username is already taken.');
-    var u = {ID:'u-' + uid_(), Name:name, Email:email, Username:username,
+    var u = {ID:getNextStudentId_(), Name:name, Email:email, Username:username,
              PassHash:hashPassword(password), Role:'student', Status:'pending',
              CreatedAt:nowISO_(), DeviceId:'', SessionToken:'', SessionExpires:''};
     appendObj_('Users', u);
@@ -1516,6 +1594,26 @@ function approve(userId, token, targetId){
     sendMailSafe_(String(u.Email), 'CEE Portal — account approved',
       'Hi ' + escHtml_(u.Name) + ',<br><br>Good news! Your account has been approved. You can now sign in and start practising.<br><br>— CEE Mock Portal');
     return {ok:true, message:String(u.Name) + ' approved.'};
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function promoteToTeacher(userId, token, targetId){
+  var lock = LockService.getScriptLock();
+  lock.waitLock(30000);
+  try{
+    requireSession_(userId, token, 'teacher');
+    var u = getUserById_(targetId);
+    if(!u) throw err_('User not found.');
+    if(String(u.Role) === 'teacher') throw err_('User is already a teacher.');
+    
+    // Assign new teacher ID format T-xxx
+    var newTeacherId = getNextTeacherId_();
+    patchRow_('Users', u._row, {Role:'teacher', ID:newTeacherId});
+    sendMailSafe_(String(u.Email), 'CEE Portal — promoted to teacher',
+      'Hi ' + escHtml_(u.Name) + ',<br><br>You have been promoted to Teacher role. Your new Teacher ID is: <b>' + newTeacherId + '</b>.<br><br>— CEE Mock Portal');
+    return {ok:true, message:String(u.Name) + ' promoted to teacher with ID ' + newTeacherId};
   } finally {
     lock.releaseLock();
   }
@@ -2012,7 +2110,8 @@ function ensureSeed_(){
   if(sh.getLastRow() > 1) return;
   var now = nowISO_();
   var rows = FALLBACK_BANK.map(function(q){
-    return ['q-' + uid_(), q.text, q.opts[0], q.opts[1], q.opts[2], q.opts[3], q.answer,
+    var qId = getNextQuestionId_(q.section);
+    return [qId, q.text, q.opts[0], q.opts[1], q.opts[2], q.opts[3], q.answer,
             q.section, q.topic, q.explanation, q.img, now, now];
   });
   sh.getRange(2, 1, rows.length, 13).setValues(rows.map(function(row){
@@ -2043,7 +2142,8 @@ function addQuestion(userId, token, q){
     if(bank_().some(function(x){ return norm_(x.text) === t; }))
       throw err_('A question with this text already exists in the bank.', 'DUPLICATE_QUESTION');
     var now = nowISO_();
-    var row = {ID:'q-' + uid_(), Text:String(q.text).trim(),
+    var qId = getNextQuestionId_(q.section);
+    var row = {ID:qId, Text:String(q.text).trim(),
       OptA:String(q.opts[0]).trim(), OptB:String(q.opts[1]).trim(), OptC:String(q.opts[2]).trim(), OptD:String(q.opts[3]).trim(),
       Answer:Math.max(0, Math.min(3, parseInt(q.answer, 10) || 0)), Section:String(q.section),
       Topic:String(q.topic || '').toUpperCase(), Explanation:String(q.explanation || '').trim(),
@@ -2145,7 +2245,8 @@ function bulkUploadQuestions(userId, token, rows, opts){
       }
       if(!dry){
         var now = nowISO_();
-        appendObj_('Questions', {ID:'q-' + uid_(), Text:String(r.QUESTION).trim(),
+        var qId = getNextQuestionId_(sec);
+        appendObj_('Questions', {ID:qId, Text:String(r.QUESTION).trim(),
           OptA:String(r.A).trim(), OptB:String(r.B).trim(), OptC:String(r.C).trim(), OptD:String(r.D).trim(),
           Answer:ansIdx, Section:sec, Topic:String(r.TOPIC || '').toUpperCase().trim(),
           Explanation:String(r.EXPLANATION || '').trim(), Image:String(r.IMAGE || ''),
