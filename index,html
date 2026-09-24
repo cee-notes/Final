@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CEE Mock Portal — MBBS / BDS entrance practice</title>
+<link rel="icon" type="image/png" href="CEE%20Notes%20Logo.png">
+<meta http-equiv="refresh" content="3;url=https://script.google.com/macros/s/AKfycbw-RTHCEahLHmuZlSIqM5LE7qL_YwVlc9-tbJDCtQyzxGB9s28XXlCB_8obRnimNuMTLA/exec">
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;
+    background:#0f1220;color:#e0e0e0;
+    font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    text-align:center}
+  .card{max-width:440px;background:#1a1d2e;border:1px solid #2a2e45;border-radius:14px;
+    padding:34px 28px;box-shadow:0 10px 30px rgba(0,0,0,.38)}
+  img{width:64px;height:64px;object-fit:contain;background:#fff;border-radius:14px;padding:6px}
+  h1{font-size:20px;margin:16px 0 6px;letter-spacing:-.2px}
+  p{color:#9aa1b5;font-size:13.5px;margin:0 0 20px}
+  .btn{display:inline-block;background:linear-gradient(135deg,#4f7cff,#6a63ff);color:#fff;
+    text-decoration:none;font-weight:600;font-size:14.5px;padding:13px 26px;border-radius:12px}
+  .alt{display:block;margin-top:16px;color:#6b7189;font-size:12.5px}
+  .alt a{color:#6b93ff}
+</style>
+</head>
+<body>
+  <main class="card">
+    <img src="CEE%20Notes%20Logo.png" alt="CEE Notes logo"
+         onerror="this.style.display='none'">
+    <h1>CEE Mock Portal</h1>
+    <p>Taking you to the live portal…</p>
+    <a class="btn" href="https://script.google.com/macros/s/AKfycbw-RTHCEahLHmuZlSIqM5LE7qL_YwVlc9-tbJDCtQyzxGB9s28XXlCB_8obRnimNuMTLA/exec">Open the portal →</a>
+    <span class="alt">Just looking around? <a href="demo.html">Try the offline demo</a> — no account needed.</span>
+  </main>
+</body>
+</html>
