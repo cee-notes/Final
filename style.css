@@ -762,3 +762,31 @@ button { font-family: inherit; cursor: pointer; }
   .reveal { opacity: 1; transform: none; transition: none; }
   * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
+/* ==========================================
+   DARK MODE STYLES
+   ========================================== */
+[data-theme="dark"] {
+  --bg-primary: #121212 !important;
+  --bg-secondary: #1e1e1e !important;
+  --bg-card: #252525 !important;
+  --text-primary: #e0e0e0 !important;
+  --text-secondary: #a0a0a0 !important;
+  --border-color: #333333 !important;
+}
+
+[data-theme="dark"] body { background-color: #121212; color: #e0e0e0; }
+[data-theme="dark"] header, [data-theme="dark"] nav, [data-theme="dark"] footer { background-color: #1e1e1e !important; border-color: #333 !important; }
+[data-theme="dark"] .card, [data-theme="dark"] .modal, [data-theme="dark"] .dashboard-box { background-color: #252525 !important; color: #e0e0e0 !important; border-color: #333 !important; }
+[data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select { background-color: #333 !important; color: #fff !important; border-color: #444 !important; }
+[data-theme="dark"] table { background-color: #1e1e1e !important; }
+[data-theme="dark"] th, [data-theme="dark"] td { border-color: #333 !important; }
+
+/* Dark Mode Toggle Button */
+.theme-toggle {
+  position: fixed; bottom: 20px; right: 20px; z-index: 9999;
+  background: #333; color: #fff; border: none; border-radius: 50%;
+  width: 50px; height: 50px; font-size: 24px; cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.3); transition: all 0.3s;
+}
+.theme-toggle:hover { transform: scale(1.1); background: #555; }
+[data-theme="dark"] .theme-toggle { background: #f1c40f; color: #000; }
