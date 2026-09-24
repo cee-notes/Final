@@ -1,270 +1,851 @@
-/**
- * ============================================================================
- * NEXUS WEBSITE — Google Apps Script Backend
- * ============================================================================
- * This script acts as your free backend API:
- *   1. Receives POST requests from the contact form
- *   2. Saves submissions to a Google Sheet
- *   3. Optionally sends email notifications
- * 
- * DEPLOYMENT INSTRUCTIONS:
- *   1. Create a new Google Sheet (or use existing one)
- *   2. Go to Extensions → Apps Script
- *   3. Delete any default code and paste this entire file
- *   4. Save the project (give it a name like "Nexus Website Backend")
- *   5. Click Deploy → New deployment
- *      - Select type: Web app
- *      - Execute as: Me
- *      - Who has access: Anyone
- *   6. Click Deploy and copy the Web App URL
- *   7. Paste that URL into script.js (CONFIG.SCRIPT_URL)
- * ============================================================================
- */
 
-// ============================================================================
-// CONFIGURATION — Edit these settings if needed
-// ============================================================================
-const CONFIG = {
-  // Sheet name where submissions are stored
-  SHEET_NAME: 'ContactSubmissions',
-  
-  // Enable email notifications (true/false)
-  EMAIL_NOTIFICATIONS_ENABLED: false,
-  
-  // Email address to receive notifications (defaults to script owner)
-  NOTIFICATION_EMAIL: Session.getActiveUser().getEmail(),
-  
-  // Email subject line for notifications
-  EMAIL_SUBJECT_PREFIX: '[NEXUS Website] New Contact Form Submission'
-};
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CEE Mock Portal</title>
+<title>CEE Mock Portal — Medical entrance practice</title>
+<meta name="description" content="Free MEC CEE (Nepal) bachelor-level mock test portal: 200-question CEE-pattern papers, negative marking, instant analytics and a teacher dashboard.">
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#0f1220" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f4f6fc" media="(prefers-color-scheme: light)">
+<link rel="icon" type="image/png" href="CEE%20Notes%20Logo.png">
+<link rel="apple-touch-icon" href="CEE%20Notes%20Logo.png">
+<!--
+  ============================================================================
+  CEE MOCK PORTAL — single-file frontend (MBBS/BDS entrance practice, Nepal)
+  --acc:#4f7cff; --acc2:#7c9bff; --ok:#34d399; --bad:#f87171; --warn:#fbbf24; --teal:#2dd4bf;
+  --gold:#fbbf24; --silver:#cbd5e1; --bronze:#fb923c;
+  --r:14px; --r-sm:9px; --shadow:0 10px 30px rgba(0,0,0,.35);
+  --glow1:rgba(79,124,255,.13); --glow2:rgba(45,212,191,.07);
+  --topbar-bg:rgba(15,18,32,.85); --hover:#272c47; --hover-line:#414870;
+  --scroll:#2c3152; --scroll-h:#3a4066; --skel1:#232842; --skel2:#2e3454;
+  color-scheme:dark;
+}
+/* ---------- light theme (toggled by the topbar button, remembered per browser) ---------- */
+:root[data-theme="light"]{
+  --bg:#f4f6fc; --panel:#ffffff; --panel2:#eef1fa; --line:#dde2f0; --line2:#c9d0e4;
+  --txt:#161a2b; --mut:#565e7d; --dim:#79819e;
+  --acc:#3b63d8; --acc2:#2c4bb0; --ok:#0f9d63; --bad:#dc2626; --warn:#b45309; --teal:#0d9488;
+  --gold:#b45309; --silver:#64748b; --bronze:#c2410c;
+  --shadow:0 8px 24px rgba(19,28,64,.08);
+  --glow1:rgba(79,124,255,.10); --glow2:rgba(45,212,191,.08);
+  --topbar-bg:rgba(255,255,255,.88); --hover:#e4e9f7; --hover-line:#aeb8d6;
+  --scroll:#c3cbe3; --scroll-h:#a9b3d1; --skel1:#e7ebf6; --skel2:#f3f5fb;
+  color-scheme:light;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+html{scroll-behavior:smooth}
+  background:var(--bg);color:var(--txt);min-height:100vh;font-size:15px;line-height:1.55;
+}
+body::before{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:radial-gradient(700px 380px at 8% -8%,rgba(79,124,255,.13),transparent 60%),
+             radial-gradient(700px 420px at 96% 4%,rgba(45,212,191,.07),transparent 60%);}
+  background:radial-gradient(700px 380px at 8% -8%,var(--glow1),transparent 60%),
+             radial-gradient(700px 420px at 96% 4%,var(--glow2),transparent 60%);}
+::selection{background:rgba(79,124,255,.45);color:#fff}
+button{font-family:inherit}
+input,select,textarea{
+input::placeholder,textarea::placeholder{color:var(--dim)}
+label{font-size:12.5px;color:var(--mut);display:block;margin:0 0 5px}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:#2c3152;border-radius:8px;border:2px solid var(--bg)}
+::-webkit-scrollbar-thumb:hover{background:#3a4066}
+::-webkit-scrollbar-thumb{background:var(--scroll);border-radius:8px;border:2px solid var(--bg)}
+::-webkit-scrollbar-thumb:hover{background:var(--scroll-h)}
+::-webkit-scrollbar-track{background:transparent}
 
-// ============================================================================
-// MAIN HANDLER — doGet serves a simple confirmation page
-// ============================================================================
-function doGet(e) {
-  return HtmlService.createHtmlOutput(`
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>NEXUS Backend Active</title>
-        <style>
-          body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0;
-            color: #fff;
-          }
-          .container {
-            text-align: center;
-            padding: 40px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 20px;
-            backdrop-filter: blur(10px);
-          }
-          h1 { font-size: 2.5rem; margin-bottom: 10px; }
-          p { font-size: 1.1rem; opacity: 0.9; }
-          .status { 
-            display: inline-block; 
-            padding: 8px 16px; 
-            background: #10b981; 
-            border-radius: 999px;
-            margin-top: 20px;
-            font-weight: 600;
-          }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <h1>NEXUS Backend</h1>
-          <p>Your contact form backend is active and ready.</p>
-          <div class="status">✓ Operational</div>
-        </div>
-      </body>
-    </html>
-  `).setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+/* ---------- layout ---------- */
+.topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:14px;
+  padding:10px 22px;background:rgba(15,18,32,.85);backdrop-filter:blur(10px);
+  padding:10px 22px;background:var(--topbar-bg);backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line);}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px;letter-spacing:.3px;cursor:pointer;user-select:none}
+.brand .logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--acc),#8b5cf6);
+  display:grid;place-items:center;font-size:15px;font-weight:800;box-shadow:0 4px 14px rgba(79,124,255,.4)}
+.brand .logo{width:34px;height:34px;border-radius:10px;background:#fff;border:1px solid var(--line2);
+  display:grid;place-items:center;font-size:15px;font-weight:800;overflow:hidden;padding:3px;
+  box-shadow:0 4px 14px rgba(79,124,255,.28)}
+.logo .logo-img{width:100%;height:100%;object-fit:contain;display:block}
+.brand small{display:block;font-size:10.5px;color:var(--mut);font-weight:500;letter-spacing:1px}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:9px}
+.chip-user{display:flex;align-items:center;gap:9px;background:var(--panel);border:1px solid var(--line);
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:9px 18px;border-radius:10px;
+  border:1px solid var(--line2);background:var(--panel2);color:var(--txt);font-size:13.5px;font-weight:600;
+  cursor:pointer;transition:transform .12s,background .15s,border-color .15s,box-shadow .15s;white-space:nowrap}
+.btn:hover{background:#272c47;border-color:#414870}
+.btn:hover{background:var(--hover);border-color:var(--hover-line)}
+.btn:active{transform:scale(.97)}
+.btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
+.btn-p{background:linear-gradient(135deg,var(--acc),#3b63d8);border-color:transparent;color:#fff;box-shadow:0 4px 14px rgba(79,124,255,.3)}
+.auth-box{width:min(430px,100%);background:var(--panel);border:1px solid var(--line);border-radius:18px;
+  padding:30px;box-shadow:var(--shadow);animation:fadeUp .4s ease}
+.auth-brand{display:flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:20px;text-align:center}
+.auth-brand .logo{width:52px;height:52px;border-radius:15px;background:linear-gradient(135deg,var(--acc),#8b5cf6);
+  display:grid;place-items:center;font-size:22px;font-weight:800;box-shadow:0 6px 20px rgba(79,124,255,.45)}
+.auth-brand .logo{width:52px;height:52px;border-radius:15px;background:#fff;border:1px solid var(--line2);
+  display:grid;place-items:center;font-size:22px;font-weight:800;overflow:hidden;padding:5px;
+  box-shadow:0 6px 20px rgba(79,124,255,.32)}
+.auth-brand h1{font-size:19px}
+.auth-brand p{font-size:12.5px;color:var(--mut)}
+.atabs{display:grid;grid-template-columns:1fr 1fr;background:var(--panel2);border-radius:11px;padding:4px;gap:4px;margin-bottom:18px}
+.atabs button{border:0;background:transparent;color:var(--mut);font-weight:600;font-size:13px;padding:8px;border-radius:8px;cursor:pointer}
+.atabs button.on{background:var(--acc);color:#fff}
+.ferr{display:none;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);color:#fca5a5;
+.ferr{display:none;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);color:var(--bad);
+  font-size:12.5px;padding:9px 12px;border-radius:9px;margin-bottom:12px}
+.ferr.on{display:block}
+.demo-hint{margin-top:16px;background:rgba(79,124,255,.07);border:1px dashed rgba(79,124,255,.3);border-radius:10px;
+.empty .e-ic{font-size:30px;margin-bottom:8px;opacity:.75}
+/* skeleton shimmer */
+tr.skel td{border-bottom:1px solid rgba(42,47,71,.5)}
+.skel-bar{height:12px;border-radius:6px;background:linear-gradient(90deg,#232842 25%,#2e3454 50%,#232842 75%);
+.skel-bar{height:12px;border-radius:6px;background:linear-gradient(90deg,var(--skel1) 25%,var(--skel2) 50%,var(--skel1) 75%);
+  background-size:200% 100%;animation:shimmer 1.3s infinite}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+.score-pill.hi{color:var(--ok)}.score-pill.mid{color:var(--warn)}.score-pill.lo{color:var(--bad)}
+.fchip{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:99px;border:1px solid var(--line2);
+  background:var(--panel2);color:var(--mut);font-size:12.5px;font-weight:600;cursor:pointer;transition:all .15s;user-select:none}
+.fchip:hover{border-color:#414870;color:var(--txt)}
+.fchip:hover{border-color:var(--hover-line);color:var(--txt)}
+.fchip.on{background:rgba(79,124,255,.16);border-color:var(--acc);color:var(--acc2)}
+.fchip.f-practice.on{background:rgba(45,212,191,.14);border-color:var(--teal);color:var(--teal)}
+.fchip b{font-variant-numeric:tabular-nums}
+.q-img{max-width:100%;border-radius:10px;border:1px solid var(--line2);margin-bottom:16px;cursor:zoom-in;display:block}
+.opts{display:grid;gap:10px}
+.opt{display:flex;gap:12px;align-items:flex-start;padding:13px 15px;border:1.5px solid var(--line2);border-radius:11px;
+  cursor:pointer;transition:all .13s;background:var(--panel2);font-size:14.5px}
+.opt:hover{border-color:#4a5280}
+  cursor:pointer;transition:all .13s;background:var(--panel2);font-size:14.5px;
+  width:100%;text-align:left;color:var(--txt);font-family:inherit;line-height:1.55}
+button.opt:disabled{cursor:default;opacity:1}
+.opt:hover{border-color:var(--hover-line)}
+.opt .ol{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;font-size:12.5px;font-weight:700;
+  background:var(--panel);border:1px solid var(--line2);flex:none;transition:all .13s}
+.opt.sel{border-color:var(--acc);background:rgba(79,124,255,.1)}
+.ifb-box .exp{color:var(--mut);margin-top:6px}
+/* palette */
+.pal-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px;position:sticky;top:76px}
+.pal-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-bottom:12px}
+.pal-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-bottom:12px;
+  /* a 200-question paper would otherwise push Submit far below the fold */
+  max-height:min(46vh,420px);overflow-y:auto;padding-right:2px}
+.pal-btn{aspect-ratio:1;border-radius:9px;border:1px solid var(--line2);background:var(--panel2);color:var(--mut);
+  font-size:12px;font-weight:650;cursor:pointer;transition:all .12s;font-variant-numeric:tabular-nums}
+.pal-btn:hover{border-color:#4a5280;color:var(--txt)}
+.pal-btn:hover{border-color:var(--hover-line);color:var(--txt)}
+.pal-btn.cur{border-color:var(--acc2);color:#fff;box-shadow:0 0 0 2px rgba(79,124,255,.35)}
+.pal-btn.ans{background:rgba(79,124,255,.2);border-color:var(--acc);color:var(--acc2)}
+.pal-btn.mk{background:rgba(251,191,36,.16);border-color:rgba(251,191,36,.5);color:var(--warn)}
+.pal-btn.ans.mk{background:linear-gradient(135deg,rgba(79,124,255,.25),rgba(251,191,36,.2))}
+.sw input:disabled + .tr{opacity:.45;cursor:not-allowed}
+input:disabled,select:disabled,textarea:disabled{opacity:.55;cursor:not-allowed}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.pal-leg{display:flex;flex-direction:column;gap:6px;font-size:11px;color:var(--dim)}
+/* exam action bar (prev / mark / clear / next) */
+.ex-actions{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+.ex-actions .btn{flex:1 1 auto;min-width:132px}
+.ex-actions #btnMarkQ[aria-pressed="true"]{background:rgba(251,191,36,.16);border-color:rgba(251,191,36,.5);color:var(--warn)}
+@media (max-width:640px){
+  .ex-actions{gap:8px}
+  .ex-actions .btn{min-width:calc(50% - 4px);padding:11px 10px}
+}
+.pal-leg i{width:11px;height:11px;border-radius:4px;display:inline-block;margin-right:6px;vertical-align:-1px}
+.ex-actions{display:flex;gap:9px;margin-top:16px;flex-wrap:wrap}
+.kbd-hint{font-size:11.5px;color:var(--dim);margin-top:12px}
+/* mode cards */
+.mcards{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:15px}
+.mcard{border:1.5px solid var(--line2);border-radius:12px;padding:14px 15px;cursor:pointer;transition:all .14s;background:var(--panel2)}
+.mcard:hover{border-color:#4a5280}
+.mcard:hover{border-color:var(--hover-line)}
+.mcard.on{border-color:var(--acc);background:rgba(79,124,255,.09);box-shadow:0 0 0 3px rgba(79,124,255,.12)}
+.mcard .mc-t{font-weight:700;font-size:13.5px;margin-bottom:3px}
+.mcard .mc-d{font-size:11.5px;color:var(--mut);line-height:1.5}
+  html{scroll-behavior:auto}
+}
+</style>
+<script>
+/* Brand mark. `npm run build` (scripts/inline-logo.mjs) replaces the empty string
+   below with a base64 copy of "CEE Notes Logo.png", so the deployed portal carries
+   its own logo with no external request — a repo-relative path cannot resolve when
+   Apps Script serves the page from script.google.com. While it is empty the markup
+   falls back to the repo file, then to the raw.githubusercontent.com URL. */
+var LOGO_DATA_URI = '';
+(function(){
+  if(!LOGO_DATA_URI) return;
+  var links = document.querySelectorAll('link[rel="icon"],link[rel="apple-touch-icon"]');
+  for(var i = 0; i < links.length; i++) links[i].href = LOGO_DATA_URI;
+  document.addEventListener('DOMContentLoaded', function(){
+    document.querySelectorAll('.logo-img').forEach(function(img){
+      img.onerror = null;
+      img.src = LOGO_DATA_URI;
+    });
+  });
+})();
+</script>
+<script>
+/* Apply the saved theme before first paint so there is no flash of the wrong colours. */
+(function(){
+  try{
+    var t = localStorage.getItem('cee_theme');
+    if(!t && window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) t = 'light';
+    document.documentElement.setAttribute('data-theme', t === 'light' ? 'light' : 'dark');
+  }catch(e){ document.documentElement.setAttribute('data-theme','dark'); }
+})();
+</script>
+</head>
+
+<body>
+<!-- ======================= TOPBAR ======================= -->
+<header class="topbar">
+  <div class="brand" id="brand" title="CEE Mock Portal">
+    <div class="logo">C</div>
+    <div class="logo"><img class="logo-img" src="CEE%20Notes%20Logo.png" alt="CEE Notes" onerror="this.onerror=null;this.src='https://raw.githubusercontent.com/cee-notes/Final-sept/main/CEE%20Notes%20Logo.png'"></div>
+    <div>CEE Mock Portal<small>MBBS / BDS ENTRANCE PRACTICE</small></div>
+  </div>
+  <div class="tb-right" id="tbRight" style="display:none">
+    <button class="btn btn-icon btn-ghost" id="btnOutbox" title="Simulated email outbox (preview only)">&#9993;<span class="ob-badge" id="obCount" style="display:none">0</span></button>
+  <div class="tb-right" id="tbRight">
+    <button class="btn btn-icon btn-ghost" id="themeToggle" type="button" title="Switch to light theme" aria-label="Switch to light theme">&#9790;</button>
+    <button class="btn btn-icon btn-ghost" id="btnOutbox" title="Simulated email outbox (preview only)" style="display:none">&#9993;<span class="ob-badge" id="obCount" style="display:none">0</span></button>
+    <button class="btn btn-icon btn-ghost" id="btnInbox" title="Inbox — messages from students" style="display:none">&#128229;<span class="ob-badge" id="inbCount" style="display:none">0</span></button>
+    <button class="btn btn-icon btn-ghost" id="btnSettings" title="Account settings">&#9881;</button>
+    <div class="chip-user"><div class="avatar" id="uAva">?</div><div><b id="uName">—</b><span id="uRole">—</span></div></div>
+    <button class="btn btn-sm" id="btnLogout">Logout</button>
+    <button class="btn btn-icon btn-ghost" id="btnSettings" title="Account settings" style="display:none">&#9881;</button>
+    <div class="chip-user" id="chipUser" style="display:none"><div class="avatar" id="uAva">?</div><div><b id="uName">—</b><span id="uRole">—</span></div></div>
+    <button class="btn btn-sm" id="btnLogout" style="display:none">Logout</button>
+  </div>
+</header>
+
+<section class="sec" id="sec-auth">
+  <div class="auth-box">
+    <div class="auth-brand">
+      <div class="logo">C</div>
+      <div class="logo"><img class="logo-img" src="CEE%20Notes%20Logo.png" alt="CEE Notes" onerror="this.onerror=null;this.src='https://raw.githubusercontent.com/cee-notes/Final-sept/main/CEE%20Notes%20Logo.png'"></div>
+      <h1>CEE Mock Portal</h1>
+      <p>Practice system for MBBS / BDS entrance preparation</p>
+    </div>
+<!-- ======================= EXAM ======================= -->
+<section class="sec" id="sec-exam">
+  <div class="ex-head">
+    <div class="ex-timer" id="exTimer"><span>&#9201;</span><span class="clock" id="exClock">60:00</span></div>
+    <div class="ex-timer" id="exTimer" role="timer" aria-label="Time remaining"><span aria-hidden="true">&#9201;</span><span class="clock" id="exClock">60:00</span></div>
+    <span id="exAnnounce" class="sr-only" role="status" aria-live="polite"></span>
+    <div class="ex-prog">
+      <div class="track"><div class="fill" id="exFill" style="width:0%"></div></div>
+      <div class="txt" id="exProgTxt">Question 1 of 8</div>
+    <span id="exModeChip" class="pill acc">MOCK</span>
+  </div>
+  <div class="ex-grid">
+    <div class="q-card" id="exQCard"></div>
+    <div>
+      <div class="q-card" id="exQCard"></div>
+      <!-- touch-friendly navigation: the keyboard shortcuts alone are unusable on phones -->
+      <div class="ex-actions">
+        <button class="btn" id="btnPrevQ" type="button">&#8592; Previous</button>
+        <button class="btn" id="btnMarkQ" type="button" aria-pressed="false">&#9873; Mark for review</button>
+        <button class="btn" id="btnClearQ" type="button">&#10005; Clear answer</button>
+        <button class="btn btn-p" id="btnNextQ" type="button">Next &#8594;</button>
+      </div>
+    </div>
+    <div class="pal-card">
+      <div class="small muted" style="font-weight:600;margin-bottom:9px">Question palette</div>
+      <div class="pal-grid" id="palGrid"></div>
+      <div class="pal-grid" id="palGrid" role="group" aria-label="Question palette"></div>
+      <div class="pal-leg">
+        <span><i style="background:rgba(79,124,255,.35);border:1px solid var(--acc)"></i>Answered</span>
+        <span><i style="background:rgba(251,191,36,.2);border:1px solid rgba(251,191,36,.5)"></i>Marked for review</span>
+        <span><i style="background:var(--panel2);border:1px solid var(--line2)"></i>Not answered</span>
+      </div>
+      <hr class="sep">
+      <button class="btn btn-p" id="btnSubmitExam" style="width:100%">Submit exam</button>
+  <div class="mhead"><h3 id="prTitle">Start a session</h3><button class="mclose" data-close>&#10005;</button></div>
+  <div class="mbody">
+    <div class="mcards">
+      <div class="mcard on" id="mCardMock"><div class="mc-t">&#9654; Full mock</div><div class="mc-d">Timed full paper, negative marking −0.25, whole bank shuffled.</div></div>
+      <div class="mcard on" id="mCardMock"><div class="mc-t">&#9654; Full mock</div><div class="mc-d">MEC CEE pattern: up to 200 Q (Phy 50 · Chem 50 · Bio 80 · MAT 20), timed, −0.25 negative marking.</div></div>
+      <div class="mcard" id="mCardPrac"><div class="mc-t">&#9998; Custom practice</div><div class="mc-d">Pick subjects &amp; count, optional timer, instant feedback.</div></div>
+    </div>
+    <div class="pr-focus" id="prFocusBox"><span id="prFocusText"></span><button class="pr-focus-x" id="prFocusX" title="Clear topic focus">&#10005;</button></div>
+    </div>
+    <div class="pr-grid">
+      <div><label>Questions</label>
+        <div class="small dim" id="prCountHint" style="display:none;padding:9px 0">Fixed by the CEE blueprint — up to 200, as many as the bank allows.</div>
+        <select id="prCount"><option value="5">5</option><option value="8" selected>8</option><option value="10">10</option><option value="15">15</option><option value="20">20</option><option value="0">All available</option></select>
+      </div>
+      <div><label>Session</label>
+      <span class="keys"><kbd>A</kbd><kbd>B</kbd><kbd>C</kbd><kbd>D</kbd></span><span>Select option (also <kbd>1</kbd>–<kbd>4</kbd>)</span>
+      <span class="keys"><kbd>&#8592;</kbd><kbd>&#8594;</kbd></span><span>Previous / next question</span>
+      <span class="keys"><kbd>M</kbd></span><span>Mark / unmark for review</span>
+      <span class="keys"><kbd>Backspace</kbd></span><span>Clear the answer on this question</span>
+      <span class="keys"><kbd>Ctrl</kbd><kbd>Enter</kbd></span><span>Submit the exam</span>
+      <span class="keys"><kbd>?</kbd></span><span>Open this help</span>
+      <span class="keys"><kbd>Esc</kbd></span><span>Close dialogs</span>
+    </div>
+  if(text) $('ovText').textContent = text;
+  ov.classList.toggle('on', !!on);
+}
+function openModal(id){ $(id).classList.add('on'); }
+function closeModal(id){ $(id).classList.remove('on'); }
+function closeAllModals(){ document.querySelectorAll('.modal.on').forEach(function(m){ m.classList.remove('on'); }); }
+/* ---------- modals: labelled, focus-managed dialogs ---------- */
+var MODAL_RETURN = {};
+var FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+function modalBox(id){ var m = $(id); return m ? m.querySelector('.mbox') : null; }
+function openModal(id){
+  var m = $(id), box = modalBox(id);
+  if(!m) return;
+  if(box && !box.getAttribute('role')){
+    box.setAttribute('role', 'dialog');
+    box.setAttribute('aria-modal', 'true');
+    box.setAttribute('tabindex', '-1');
+    var h = box.querySelector('.mhead h3');
+    if(h){ if(!h.id) h.id = id + 'Title'; box.setAttribute('aria-labelledby', h.id); }
+  }
+  MODAL_RETURN[id] = document.activeElement;
+  m.classList.add('on');
+  /* move focus into the dialog so keyboard and screen-reader users are not left behind */
+  setTimeout(function(){
+    if(!m.classList.contains('on') || !box) return;
+    var first = box.querySelector(FOCUSABLE);
+    (first || box).focus();
+  }, 30);
+}
+function closeModal(id){
+  var m = $(id);
+  if(!m || !m.classList.contains('on')) return;
+  m.classList.remove('on');
+  var back = MODAL_RETURN[id];
+  MODAL_RETURN[id] = null;
+  if(back && document.contains(back) && back.focus){ try{ back.focus(); }catch(e){} }
+}
+function closeAllModals(){ document.querySelectorAll('.modal.on').forEach(function(m){ closeModal(m.id); }); }
+function topModal(){
+  var list = document.querySelectorAll('.modal.on');
+  return list.length ? list[list.length-1] : null;
+}
+/* keep Tab inside the open dialog */
+function trapFocus(e){
+  var m = topModal();
+  if(!m || e.key !== 'Tab') return;
+  var box = m.querySelector('.mbox') || m;
+  var items = Array.prototype.filter.call(box.querySelectorAll(FOCUSABLE), function(el){
+    return el.offsetParent !== null || el === document.activeElement;
+  });
+  if(!items.length) return;
+  var first = items[0], last = items[items.length-1];
+  if(e.shiftKey && document.activeElement === first){ last.focus(); e.preventDefault(); }
+  else if(!e.shiftKey && document.activeElement === last){ first.focus(); e.preventDefault(); }
+}
+var CF_CB = null;
+function confirmDlg(title, text, yesLabel, cb){
+  $('cfTitle').textContent = title;
+  }
+  return out;
+}
+/* ---------- MEC CEE bachelor-level paper blueprint ----------
+   Official pattern: 200 MCQs / 180 minutes / +1 / −0.25.
+   Subject weighting: Physics 25%, Chemistry 25%, Biology 40% (zoology + botany),
+   MAT 10%. A mock draws this shape from the bank, keeps the subjects grouped the
+   way the real paper does, and scales the clock to the paper it could actually
+   build (0.9 min per question) so a small bank does not hand out a 3-hour timer.
+   KEEP IN SYNC with the same block in cee_mock_all_in_one.gs — the server
+   rebuilds the identical set when it scores an attempt.                        */
+var CEE_BLUEPRINT = [
+  {section:'Physics',   n:50},
+  {section:'Chemistry', n:50},
+  {section:'Biology',   n:40},
+  {section:'Botany',    n:40},
+  {section:'Maths',     n:20}
+];
+var CEE_TOTAL_Q = 200, CEE_MIN_PER_Q = 0.9, CEE_MIN_MINUTES = 10, CEE_MAX_MINUTES = 240;
+function ceeDurationForClient(n){
+  return Math.max(CEE_MIN_MINUTES, Math.min(CEE_MAX_MINUTES, Math.round((n || 0) * CEE_MIN_PER_Q)));
+}
+function buildCeeMockSetClient(bank, seed){
+  var bySection = {};
+  bank.forEach(function(q){
+    var s = q.section;
+    (bySection[s] = bySection[s] || []).push(q);
+  });
+  var takes = [], rest = [];
+  CEE_BLUEPRINT.forEach(function(b, i){
+    var pool = seededShuffleClient(bySection[b.section] || [], seed + i * 7919);
+    takes.push(pool.slice(0, b.n));
+    pool.slice(b.n).forEach(function(q){ rest.push(q); });
+  });
+  var picked = takes.reduce(function(n, t){ return n + t.length; }, 0);
+  if(picked < CEE_TOTAL_Q && rest.length){
+    /* some subjects were short — top up from the rest of the bank, still grouped */
+    var fill = seededShuffleClient(rest, seed + 104729).slice(0, CEE_TOTAL_Q - picked);
+    fill.forEach(function(q){
+      for(var i = 0; i < CEE_BLUEPRINT.length; i++){
+        if(CEE_BLUEPRINT[i].section === q.section){ takes[i].push(q); return; }
+      }
+      takes[0].push(q);
+    });
+  }
+  var out = [];
+  takes.forEach(function(t){ out = out.concat(t); });
+  return out;
+}
+function normalizeExamOptionsClient(o){
+  o = o || {};
+  var mode = (o.mode === 'practice') ? 'practice' : 'mock';
+  tops = tops.filter(function(t,i){ return tops.indexOf(t) === i; }).sort();
+  var count = Math.max(0, Math.min(200, parseInt(o.count,10) || 0));
+  var timed = mode === 'mock' ? true : !!o.timed;
+  var dur = mode === 'mock' ? 60 : Math.max(0, Math.min(240, parseInt(o.durationMinutes,10) || 0));
+  if(timed && dur === 0) dur = 60;
+  /* mock duration is 0 = "auto": derived from the paper the bank can actually fill */
+  var dur = 0;
+  if(mode !== 'mock'){
+    dur = Math.max(0, Math.min(240, parseInt(o.durationMinutes,10) || 0));
+    if(timed && dur === 0) dur = 60;
+  }
+  var neg = mode === 'mock' ? true : !!o.negMarking;
+  var ifb = mode === 'practice' ? !!o.ifb : false;
+  return {mode:mode, subjects:subs, topics:tops, count:count, timed:timed, durationMinutes:dur, negMarking:neg, ifb:ifb};
+  });
+}
+function buildExamSetClient(bank, opts, seed){
+  if(opts.mode === 'mock') return buildCeeMockSetClient(bank, seed);
+  var pool = filterBankForPracticeClient(bank, opts);
+  var set = seededShuffleClient(pool, seed);
+  if(opts.mode === 'practice' && opts.count > 0) set = set.slice(0, Math.min(opts.count, set.length));
+  if(opts.count > 0) set = set.slice(0, Math.min(opts.count, set.length));
+  return set;
 }
 
-// ============================================================================
-// MAIN HANDLER — doPost receives contact form submissions
-// ============================================================================
-function doPost(e) {
-  try {
-    // Parse incoming JSON data
-    const data = JSON.parse(e.postData.contents);
-    
-    // Validate required fields
-    const validation = validateSubmission(data);
-    if (!validation.valid) {
-      return jsonResponse({
-        success: false,
-        message: validation.error
+/* ---------- callServer: single gateway to GAS or MockApi ---------- */
+function callServer(fn){
+  var args = Array.prototype.slice.call(arguments, 1);
+  var p;
+  if(IS_GAS){
+    return new Promise(function(resolve, reject){
+    p = new Promise(function(resolve, reject){
+      var runner = google.script.run
+        .withSuccessHandler(resolve)
+        .withFailureHandler(function(err){
+        });
+      runner[fn].apply(runner, args);
+    });
+  } else {
+    p = new Promise(function(resolve, reject){
+      try{
+        var r = MockApi[fn].apply(MockApi, args);
+        resolve(r);
+      }catch(e){ reject(e); }
+    });
+  }
+  return new Promise(function(resolve, reject){
+    try{
+      var r = MockApi[fn].apply(MockApi, args);
+      resolve(r);
+    }catch(e){ reject(e); }
+  /* A dead session used to surface as a random red toast on every panel; now it
+     signs the user out once and sends them back to the login screen. */
+  return p.catch(function(e){
+    var msg = (e && e.message) || '';
+    if(fn !== 'restoreSession' && fn !== 'login' && P.user && /session expired/i.test(msg)) handleSessionExpired();
+    throw e;
+  });
+}
+function handleSessionExpired(){
+  if(P.sessionExpiring) return;
+  P.sessionExpiring = true;
+  stopTimer();
+  try{ localStorage.removeItem(SES_KEY); }catch(e){}
+  P.user = null; P.token = null; P.exam = null;
+  closeAllModals();
+  overlay(false);
+  applyUser();
+  route('auth');
+  toast('Your session expired — please sign in again.', 'warn');
+  setTimeout(function(){ P.sessionExpiring = false; }, 1500);
+}
+
+/* ---------- device id + persisted session ---------- */
+function getDeviceId(){
+      var seedKey = strSeedClient(userId + '|' + startedAt + '|' + sig);
+      var set = buildExamSetClient(bank, opts, seedKey);
+      if(!set.length) throw err('No questions match the selected subjects/topics. Try widening your filter.', 'EMPTY_FILTER');
+      var durMin = opts.timed ? opts.durationMinutes : 0;
+      var durMin = opts.mode === 'mock' ? ceeDurationForClient(set.length) : (opts.timed ? opts.durationMinutes : 0);
+      var deadline = opts.timed ? new Date(Date.now() + durMin*60000).toISOString() : '';
+      db.examMeta[userId] = {start:startedAt, dur:durMin, opts:opts, sig:sig, attemptIndex:attemptIndex};
+      save();
+}
+function applyUser(){
+  var u = P.user;
+  $('tbRight').style.display = u ? 'flex' : 'none';
+  /* the topbar stays visible when signed out so the theme toggle is always reachable */
+  ['chipUser','btnLogout','btnSettings','btnOutbox','btnInbox'].forEach(function(id){
+    $(id).style.display = 'none';
+  });
+  if(!u) return;
+  $('uAva').textContent = initials(u.name);
+  $('uName').textContent = u.name;
+  $('uRole').textContent = (u.role === 'teacher' ? 'Teacher' : 'Student') + (IS_GAS ? '' : ' · sandbox');
+  $('chipUser').style.display = '';
+  $('btnLogout').style.display = '';
+  $('btnSettings').style.display = '';
+  $('btnOutbox').style.display = IS_GAS ? 'none' : '';
+  $('btnInbox').style.display = u.role === 'teacher' ? '' : 'none';
+  if(u.role !== 'teacher'){ $('inbCount').style.display = 'none'; }
+  renderOutboxBadge();
+}
+
+/* ---------- theme (dark by default, follows the OS until the user chooses) ---------- */
+var THEME_KEY = 'cee_theme';
+function prefersLight(){
+  try{ return !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches); }catch(e){ return false; }
+}
+function applyTheme(theme){
+  var light = theme === 'light';
+  document.documentElement.setAttribute('data-theme', light ? 'light' : 'dark');
+  var b = $('themeToggle');
+  if(b){
+    b.innerHTML = light ? '&#9728;' : '&#9790;';           /* ☀ / ☾ */
+    var label = light ? 'Switch to dark theme' : 'Switch to light theme';
+    b.title = label;
+    b.setAttribute('aria-label', label);
+  }
+}
+function currentTheme(){ return document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark'; }
+function initTheme(){
+  var saved = null;
+  try{ saved = localStorage.getItem(THEME_KEY); }catch(e){}
+  applyTheme(saved || (prefersLight() ? 'light' : 'dark'));
+  if(!saved && window.matchMedia){
+    try{
+      var mq = window.matchMedia('(prefers-color-scheme: light)');
+      var onChange = function(e){
+        var stored = null;
+        try{ stored = localStorage.getItem(THEME_KEY); }catch(_){}
+        if(!stored) applyTheme(e.matches ? 'light' : 'dark');
+      };
+      if(mq.addEventListener) mq.addEventListener('change', onChange);
+      else if(mq.addListener) mq.addListener(onChange);
+    }catch(e){}
+  }
+}
+function toggleTheme(){
+  var next = currentTheme() === 'light' ? 'dark' : 'light';
+  applyTheme(next);
+  try{ localStorage.setItem(THEME_KEY, next); }catch(e){}
+}
+function afterLogin(){
+  stopTimer();
+  applyUser();
+  var fin = function(){
+    callServer('logout', P.user.id, P.token).catch(function(){});
+    try{ localStorage.removeItem(SES_KEY); }catch(e){}
+    stopTimer(); P.exam = null; try{ localStorage.removeItem(EXAM_KEY); }catch(e){}
+    stopTimer(); clearStoredExam(); P.exam = null;
+    P.user = null; P.token = null;
+    applyUser(); route('auth');
+    toast('Signed out. See you soon!', 'ok');
+  $('mCardMock').classList.toggle('on', mock);
+  $('mCardPrac').classList.toggle('on', !mock);
+  $('prCustom').style.display = mock ? 'none' : '';
+  /* a mock always follows the CEE blueprint — these controls only apply to practice */
+  ['prCount','swTimed','swNeg','swIfb'].forEach(function(id){ $(id).disabled = mock; });
+  $('prCountHint').style.display = mock ? '' : 'none';
+  $('prCount').style.display = mock ? 'none' : '';
+  if(mock){
+    setSwitch('swTimed', true); setSwitch('swNeg', true); setSwitch('swIfb', false);
+    $('prCount').value = '8';
+    $('prCount').value = '0';
+    $('prFocusBox').classList.remove('on'); P.drill = null;
+  } else {
+    setSwitch('swTimed', false); setSwitch('swNeg', false); setSwitch('swIfb', true);
+function syncPrState(){
+  var mock = prMode() === 'mock';
+  var timed = $('swTimed').checked;
+  var mins = mock ? 60 : 30;
+  $('prTimeHint').textContent = timed ? (mins + ' minutes, auto-submit') : 'Untimed — count-up clock, resume anytime';
+  $('prTimeHint').textContent = mock
+    ? 'CEE pace — 0.9 min per question (180 min for a full 200-question paper), auto-submit'
+    : (timed ? '30 minutes, auto-submit' : 'Untimed — count-up clock, resume anytime');
+  /* topic focus drops if its subject chip is toggled off */
+  if(P.drill){
+    var chip = document.querySelector('#prSubjChips [data-subj="' + P.drill.section + '"]');
+    topics: (P.drill && !mock) ? [P.drill.topic] : [],
+    count: mock ? 0 : parseInt($('prCount').value, 10) || 0,
+    timed: mock ? true : $('swTimed').checked,
+    durationMinutes: mock ? 60 : ($('swTimed').checked ? 30 : 0),
+    durationMinutes: mock ? 0 : ($('swTimed').checked ? 30 : 0), /* 0 = server picks the CEE-paced clock */
+    negMarking: mock ? true : $('swNeg').checked,
+    ifb: mock ? false : $('swIfb').checked
+  };
+      attemptIndex: r.attemptIndex, startedAt: r.startedAt, deadline: r.deadline,
+      durMin: r.durMin, opts: r.opts, qs: r.questions, answers: {}, marks: {}, cur: 0
+    };
+    try{ localStorage.setItem(EXAM_KEY, JSON.stringify(P.exam)); }catch(e){}
+    P.persistWarned = false;
+    P.warned = {};
+    persistExam();
+    enterExam();
+  }).catch(function(e){
+    overlay(false);
+      }
+      el.classList.toggle('warn', left < 300 && left >= 60);
+      el.classList.toggle('danger', left < 60);
+      clock.textContent = mmss(left);
+      /* a 180-minute paper reads as 2:59:59, not 179:59 */
+      clock.textContent = left >= 3600 ? hhmmss(left) : mmss(left);
+      /* spoken/visible warnings so nobody is surprised by the auto-submit */
+      P.warned = P.warned || {};
+      [600, 300, 60].forEach(function(mark){
+        if(left <= mark && !P.warned[mark]){
+          P.warned[mark] = true;
+          var txt = mark >= 60 ? (mark/60) + ' minute' + (mark === 60 ? '' : 's') + ' left' : mark + 's left';
+          toast(txt + ' — unanswered questions score 0.', mark <= 60 ? 'bad' : 'warn');
+          $('exAnnounce').textContent = txt;
+        }
       });
+      $('exFill').style.width = (100 - Math.min(100, left/(P.exam.durMin*60)*100)) + '%';
+    } else {
+      var el2 = Math.max(0, (Date.now() - new Date(P.exam.startedAt))/1000);
+}
+
+/* ---------- exam lifecycle ---------- */
+/* In-progress exams are stored per user so a shared browser never drops one
+   student into another student's paper. */
+function examKey(){ return EXAM_KEY + ':' + (P.user ? P.user.id : 'anon'); }
+function clearStoredExam(){
+  try{ localStorage.removeItem(examKey()); localStorage.removeItem(EXAM_KEY); }catch(e){}
+}
+function maybeResumeExam(){
+  if(P.exam) return;
+  if(P.exam || !P.user || P.user.role === 'teacher') return;
+  var ex = null;
+  try{
+    var raw = localStorage.getItem(EXAM_KEY);
+    if(raw && P.user && P.user.role !== 'teacher'){
+      var ex = JSON.parse(raw);
+      if(ex && ex.qs && ex.qs.length){ P.exam = ex; enterExam(); }
+    var raw = localStorage.getItem(examKey());
+    if(!raw){
+      /* migrate an exam saved by an older build (unscoped key) */
+      var legacy = localStorage.getItem(EXAM_KEY);
+      if(legacy){
+        var lx = JSON.parse(legacy);
+        if(lx && (!lx.userId || lx.userId === P.user.id)) raw = legacy;
+        localStorage.removeItem(EXAM_KEY);
+      }
     }
-    
-    // Save to Google Sheet
-    const sheet = getOrCreateSheet();
-    const timestamp = new Date();
-    
-    const rowData = [
-      timestamp.toISOString(),
-      data.name || '',
-      data.email || '',
-      data.subject || '',
-      data.message || '',
-      data.page || '',
-      data.submittedAt || ''
-    ];
-    
-    sheet.appendRow(rowData);
-    
-    // Send email notification if enabled
-    if (CONFIG.EMAIL_NOTIFICATIONS_ENABLED) {
-      sendEmailNotification(data, timestamp);
-    }
-    
-    // Return success response
-    return jsonResponse({
-      success: true,
-      message: 'Thank you! Your message has been received.',
-      timestamp: timestamp.toISOString()
+  }catch(e){}
+    if(raw) ex = JSON.parse(raw);
+  }catch(e){ ex = null; }
+  if(!ex || !ex.qs || !ex.qs.length){ return; }
+  if(ex.userId && ex.userId !== P.user.id){ clearStoredExam(); return; }
+  P.exam = ex;
+  var expired = ex.deadline && new Date(ex.deadline) <= new Date();
+  enterExam();
+  if(expired) toast('Your time had already run out — submitting that attempt now.', 'warn');
+  else toast('Resumed your unfinished ' + (ex.opts && ex.opts.mode === 'practice' ? 'practice set' : 'mock exam') + '.', 'ok');
+}
+function enterExam(){
+  route('exam');
+  var isP = o.mode === 'practice';
+  chip.textContent = isP ? 'PRACTICE' : 'MOCK';
+  chip.className = 'pill ' + (isP ? 'teal' : 'acc');
+  buildPalette();
+  renderQuestion();
+  renderPalette();
+  startTimer();
+}
+function persistExam(){
+  try{ if(P.exam) localStorage.setItem(EXAM_KEY, JSON.stringify(P.exam)); }catch(e){}
+  if(!P.exam) return;
+  P.exam.userId = P.user ? P.user.id : '';
+  try{ localStorage.setItem(examKey(), JSON.stringify(P.exam)); }
+  catch(e){
+    /* localStorage is full (large image-heavy papers) — keep going without autosave */
+    if(!P.persistWarned){ P.persistWarned = true; toast('Could not autosave locally — finish this attempt in one sitting.', 'warn'); }
+  }
+}
+function renderPalette(){
+/* The palette is built once per exam and then patched in place — rebuilding 200
+   buttons (and 200 listeners) on every keystroke made long mocks sluggish. */
+function buildPalette(){
+  var g = $('palGrid');
+  g.innerHTML = P.exam.qs.map(function(q, i){
+    return '<button class="pal-btn" type="button" data-q="' + i + '">' + (i+1) + '</button>';
+  }).join('');
+  if(!g.dataset.bound){
+    g.addEventListener('click', function(e){
+      var b = e.target.closest('[data-q]');
+      if(!b || !P.exam) return;
+      P.exam.cur = parseInt(b.getAttribute('data-q'), 10);
+      renderQuestion();
+      renderPalette();
     });
-    
-  } catch (error) {
-    Logger.log('Error in doPost: ' + error.toString());
-    return jsonResponse({
-      success: false,
-      message: 'Server error. Please try again later.'
-    }, 500);
+    g.dataset.bound = '1';
+  }
+  renderPalette();
+}
+function renderPalette(){
+  var g = $('palGrid');
+  var btns = g.children;
+  if(btns.length !== P.exam.qs.length) return buildPalette();
+  for(var i = 0; i < P.exam.qs.length; i++){
+    var q = P.exam.qs[i], b = btns[i];
+    var ans = P.exam.answers[q.id] != null && P.exam.answers[q.id] >= 0;
+    var mk = !!P.exam.marks[q.id];
+    return '<button class="pal-btn' + (ans ? ' ans' : '') + (mk ? ' mk' : '') +
+      (i === P.exam.cur ? ' cur' : '') + '" data-q="' + i + '">' + (i+1) + '</button>';
+  }).join('');
+  g.querySelectorAll('[data-q]').forEach(function(b){
+    b.addEventListener('click', function(){ P.exam.cur = parseInt(b.getAttribute('data-q'),10); renderQuestion(); renderPalette(); });
+  });
+    b.className = 'pal-btn' + (ans ? ' ans' : '') + (mk ? ' mk' : '') + (i === P.exam.cur ? ' cur' : '');
+    b.setAttribute('aria-label', 'Question ' + (i+1) + ' — ' + (ans ? 'answered' : 'not answered') + (mk ? ', marked for review' : ''));
+    if(i === P.exam.cur) b.setAttribute('aria-current', 'true'); else b.removeAttribute('aria-current');
+  }
+  var unanswered = P.exam.qs.filter(function(q){ return P.exam.answers[q.id] == null || P.exam.answers[q.id] < 0; }).length;
+  $('btnSubmitExam').textContent = unanswered ? ('Submit exam (' + unanswered + ' unanswered)') : 'Submit exam';
+  syncExamActions();
+}
+/* keeps the prev/mark/clear/next bar in sync with the current question */
+function syncExamActions(){
+  if(!P.exam) return;
+  var q = P.exam.qs[P.exam.cur];
+  if(!q) return;
+  var answered = P.exam.answers[q.id] != null && P.exam.answers[q.id] >= 0;
+  var marked = !!P.exam.marks[q.id];
+  $('btnPrevQ').disabled = P.exam.cur === 0;
+  $('btnNextQ').disabled = P.exam.cur >= P.exam.qs.length - 1;
+  $('btnClearQ').disabled = !answered || !!q.locked;
+  $('btnMarkQ').setAttribute('aria-pressed', marked ? 'true' : 'false');
+  $('btnMarkQ').innerHTML = marked ? '&#9873; Unmark' : '&#9873; Mark for review';
+}
+function renderQuestion(){
+  var q = P.exam.qs[P.exam.cur];
+      else cls += ' c-neu';
+      cls += ' locked';
+    } else if(chosen === i) cls += ' sel';
+    return '<div class="' + cls + '" data-opt="' + i + '"><span class="ol">' + 'ABCD'[i] + '</span><span>' + esc(o) + '</span></div>';
+    /* real <button> elements: keyboard reachable and announced by screen readers */
+    return '<button type="button" class="' + cls + '" data-opt="' + i + '" role="radio" aria-checked="' +
+      (chosen === i ? 'true' : 'false') + '"' + (locked ? ' disabled' : '') +
+      '><span class="ol">' + 'ABCD'[i] + '</span><span>' + esc(o) + '</span></button>';
+  }).join('');
+  var ifb = '';
+  if(locked){
+  }
+  var img = q.img ? '<img class="q-img" src="' + esc(q.img) + '" alt="question illustration" data-lightbox>' : '';
+  $('exQCard').innerHTML = '<div class="q-meta">' + meta + '</div>' +
+    '<div class="q-text">' + esc(q.text) + '</div>' + img +
+    '<div class="opts">' + optsHtml + '</div>' + ifb;
+    '<div class="q-text" id="exQText">' + esc(q.text) + '</div>' + img +
+    '<div class="opts" role="radiogroup" aria-labelledby="exQText">' + optsHtml + '</div>' + ifb;
+  $('exProgTxt').textContent = 'Question ' + (P.exam.cur+1) + ' of ' + P.exam.qs.length +
+    (P.exam.durMin > 0 ? '' : ' · untimed');
+  $('exQCard').querySelectorAll('[data-opt]').forEach(function(el){
+  });
+  bindLightbox($('exQCard'));
+  $('exFill').style.width = ((P.exam.cur+1)/P.exam.qs.length*100) + '%';
+  syncExamActions();
+}
+function selectOption(i){
+  if(!P.exam || P.submitting) return;
+  delete P.exam.answers[q.id];
+  persistExam(); renderQuestion(); renderPalette();
+}
+/* Warn before a reload/close mid-exam (answers are autosaved, but a surprise
+   reload during a timed mock is still alarming). */
+window.addEventListener('beforeunload', function(e){
+  if(P.exam && !P.submitting){
+    e.preventDefault();
+    e.returnValue = '';
+    return '';
+  }
+});
+function submitExamClick(){
+  if(!P.exam || P.submitting) return;
+  var unanswered = P.exam.qs.filter(function(q){ return P.exam.answers[q.id] == null || P.exam.answers[q.id] < 0; }).length;
+    dur: P.exam.durMin,
+    autoSubmitted: !!auto,
+    answers: P.exam.answers,
+    /* images are deliberately left out: the server re-resolves each question from
+       the bank by id/text, and base64 images made submissions huge and slow */
+    qs: P.exam.qs.map(function(q){
+      var s = {id:q.id, text:q.text, opts:q.opts, section:q.section, topic:q.topic, img:q.img||''};
+      var s = {id:q.id, text:q.text, opts:q.opts, section:q.section, topic:q.topic};
+      if(P.exam.opts && P.exam.opts.ifb && q.answer != null){ s.answer = q.answer; s.explanation = q.explanation || ''; }
+      return s;
+    })
+  callServer('submitExam', P.user.id, P.token, payload).then(function(res){
+    P.submitting = false;
+    overlay(false);
+    clearStoredExam();
+    P.exam = null;
+    try{ localStorage.removeItem(EXAM_KEY); }catch(e){}
+    renderResult(res);
+  }).catch(function(e){
+    P.submitting = false;
+  return $('sec-exam').classList.contains('on') && P.exam && !document.querySelector('.modal.on');
+}
+function globalKeydown(e){
+  trapFocus(e);
+  if(e.key === 'Escape'){
+    closeAllModals();
+    $('outbox').classList.remove('on');
+    $('lightbox').classList.remove('on');
+    return;
+  }
+  if($('sec-exam').classList.contains('on') && P.exam && !document.querySelector('.modal.on') &&
+     !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)){
+  if(examKeyboardActive() && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)){
+    if(e.key === '?'){ openModal('modalKbd'); e.preventDefault(); return; }
+    var k = e.key.toLowerCase();
+    var idx = 'abcd'.indexOf(k);
+    if(e.key === 'ArrowLeft'){ navQ(-1); e.preventDefault(); return; }
+    if(e.key === 'ArrowRight'){ navQ(1); e.preventDefault(); return; }
+    if(k === 'm'){ markCurrent(); e.preventDefault(); return; }
+    if(e.key === 'Backspace' || e.key === 'Delete'){ clearAnswer(); e.preventDefault(); return; }
+    if(e.key === 'Enter' && (e.ctrlKey || e.metaKey)){ submitExamClick(); e.preventDefault(); return; }
   }
 }
 
-// ============================================================================
-// HELPER FUNCTIONS
-// ============================================================================
-
-/**
- * Get or create the submissions sheet
- */
-function getOrCreateSheet() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let sheet = ss.getSheetByName(CONFIG.SHEET_NAME);
-  
-  if (!sheet) {
-    sheet = ss.insertSheet(CONFIG.SHEET_NAME);
-    
-    // Create header row
-    sheet.appendRow([
-      'Timestamp',
-      'Name',
-      'Email',
-      'Subject',
-      'Message',
-      'Page URL',
-      'Submitted At'
-    ]);
-    
-    // Format header row
-    const headerRange = sheet.getRange(1, 1, 1, 7);
-    headerRange.setBackground('#2563eb');
-    headerRange.setFontColor('#ffffff');
-    headerRange.setFontWeight('bold');
-    headerRange.setHorizontalAlignment('center');
-    
-    // Auto-resize columns
-    sheet.autoResizeColumns(1, 7);
-  }
-  
-  return sheet;
-}
-
-/**
- * Validate form submission data
- */
-function validateSubmission(data) {
-  if (!data.name || data.name.trim().length < 2) {
-    return { valid: false, error: 'Name is required (minimum 2 characters)' };
-  }
-  
-  if (!data.email || !isValidEmail(data.email)) {
-    return { valid: false, error: 'Valid email is required' };
-  }
-  
-  if (!data.message || data.message.trim().length < 10) {
-    return { valid: false, error: 'Message must be at least 10 characters' };
-  }
-  
-  return { valid: true };
-}
-
-/**
- * Simple email validation
- */
-function isValidEmail(email) {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-  return emailRegex.test(email);
-}
-
-/**
- * Send email notification
- */
-function sendEmailNotification(data, timestamp) {
-  try {
-    const subject = `${CONFIG.EMAIL_SUBJECT_PREFIX} from ${data.name}`;
-    const body = `
-New Contact Form Submission
-============================
-
-Name:    ${data.name}
-Email:   ${data.email}
-Subject: ${data.subject || 'N/A'}
-Message: ${data.message}
-
-Page: ${data.page || 'N/A'}
-Received: ${timestamp.toLocaleString()}
-
----
-This email was sent automatically by your NEXUS website backend.
-    `.trim();
-    
-    MailApp.sendEmail({
-      to: CONFIG.NOTIFICATION_EMAIL,
-      subject: subject,
-      body: body
     });
-    
-    Logger.log('Email notification sent to: ' + CONFIG.NOTIFICATION_EMAIL);
-  } catch (error) {
-    Logger.log('Failed to send email notification: ' + error.toString());
-    // Don't fail the submission if email fails
-  }
+  });
+  /* topbar */
+  $('themeToggle').addEventListener('click', toggleTheme);
+  $('btnLogout').addEventListener('click', doLogout);
+  $('btnSettings').addEventListener('click', openSettings);
+  $('btnOutbox').addEventListener('click', function(){ renderOutbox(); $('outbox').classList.add('on'); });
+  $('btnPrStart').addEventListener('click', startSessionFromModal);
+  /* exam */
+  $('btnSubmitExam').addEventListener('click', submitExamClick);
+  $('btnPrevQ').addEventListener('click', function(){ navQ(-1); });
+  $('btnNextQ').addEventListener('click', function(){ navQ(1); });
+  $('btnMarkQ').addEventListener('click', markCurrent);
+  $('btnClearQ').addEventListener('click', clearAnswer);
+  $('btnKbdHelp1').addEventListener('click', function(){ openModal('modalKbd'); });
+  /* result / review */
+  $('btnResDash').addEventListener('click', function(){ route('student'); loadStudentDash(); });
+  $('btnCfNo').addEventListener('click', function(){ closeModal('modalConfirm'); CF_CB = null; });
+  /* modal close buttons + backdrop */
+  document.querySelectorAll('[data-close]').forEach(function(b){
+    b.addEventListener('click', function(){ b.closest('.modal').classList.remove('on'); });
+    b.addEventListener('click', function(){ var m = b.closest('.modal'); if(m) closeModal(m.id); });
+  });
+  document.querySelectorAll('.modal').forEach(function(m){
+    m.addEventListener('click', function(e){ if(e.target === m) m.classList.remove('on'); });
+    m.addEventListener('click', function(e){ if(e.target === m) closeModal(m.id); });
+  });
+  document.addEventListener('keydown', globalKeydown);
 }
 
-/**
- * Return JSON response with proper headers
- */
-function jsonResponse(data, statusCode) {
-  statusCode = statusCode || 200;
-  
-  return ContentService.createTextOutput(JSON.stringify(data))
-    .setMimeType(ContentService.MimeType.JSON)
-    .setHeader('Access-Control-Allow-Origin', '*')
-    .setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
-    .setHeader('Access-Control-Allow-Headers', 'Content-Type');
-}
-
-/**
- * Handle CORS preflight requests
- */
-function doOptions(e) {
-  return ContentService.createTextOutput('')
-    .setMimeType(ContentService.MimeType.TEXT)
-    .setHeader('Access-Control-Allow-Origin', '*')
-    .setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
-    .setHeader('Access-Control-Allow-Headers', 'Content-Type');
-}
+document.addEventListener('DOMContentLoaded', function(){ wire(); boot(); });
+document.addEventListener('DOMContentLoaded', function(){ initTheme(); wire(); boot(); });
+</script>
+  <!-- Dark Mode Toggle -->
+<button class="theme-toggle" id="themeToggle" title="Toggle Dark Mode">🌙</button>
+</body>
+</html>
