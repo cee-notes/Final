@@ -1,73 +1,110 @@
-# CEE Mock Portal
+# MEC CEE Bachelor Level Practice Portal
 
-A comprehensive online practice system for **MBBS/BDS entrance exam preparation** in Nepal. This platform provides students with mock exams, custom practice sessions, and detailed analytics, while teachers can manage question banks, monitor student progress, and generate reports.
+A comprehensive, free-to-use online mock test platform designed specifically for **MEC CEE (Medical Education Commission Common Entrance Examination)** aspirants in Nepal. This system helps students prepare for MBBS, BDS, Nursing, and Public Health Service bachelor-level entrance exams through timed mocks, detailed analytics, and a robust question bank.
 
-🌐 **Live Demo**: https://cee-notes.github.io/Final/
+🌐 **Live Portal**: [https://cee-notes.github.io/Final/](https://cee-notes.github.io/Final/)  
+📂 **Source Code**: [GitHub Repository](https://github.com/cee-notes/Final)
 
-## ✨ Features
+---
 
-### For Students
-- **Mock Exams**: Timed practice tests (60 minutes) simulating real exam conditions
-- **Custom Practice**: Targeted practice on specific subjects or topics
-- **Performance Dashboard**: Track your progress with detailed statistics
-  - Accuracy trends over time
-  - Subject-wise performance breakdown
-  - Weak topics identification
-  - Best scores and attempt history
-- **Leaderboard**: Compete with peers
-- **Answer Review**: Detailed review of completed exams with correct answers
-- **Print/PDF Export**: Save your results and reports
+## 🎯 Objective
 
-### For Teachers
-- **Student Management**: Approve new registrations, view all students
-- **Question Bank**: Comprehensive MCQ management system
-  - Create, edit, search, and delete questions
-  - Bulk upload via CSV, Excel, or PDF extraction
-  - Organize by subject and topic
-- **Class Analytics**: Monitor overall class performance
-  - Active students tracking
-  - Participation rates
-  - Class accuracy metrics
-  - Subject-wise breakdowns
-  - Identify weak topics across the class
-  - Per-student progress reports
-- **Activity Monitoring**: View recent student activity
-- **Export Data**: Download analytics as CSV
+To provide Nepali medical aspirants with a realistic exam simulation environment that mirrors the **MEC CEE pattern**, offering:
+- **Timed Mock Tests** simulating the actual 2-hour exam duration.
+- **Negative Marking** logic (+1 for correct, -0.25 for wrong).
+- **Detailed Performance Analytics** to identify weak areas in Physics, Chemistry, Biology, and English.
+- **Teacher/Admin Dashboard** for managing question banks and student progress.
 
-### System Features
-- **User Authentication**: Secure sign-in and registration
-- **Role-Based Access**: Separate interfaces for students and teachers
-- **Teacher Approval System**: New student accounts require teacher approval
-- **Demo Accounts**: Test the system with pre-configured demo credentials
-- **Responsive Design**: Works on desktop and mobile devices
-- **Keyboard Shortcuts**: Fast navigation during exams (A-D for options, arrows for navigation, M to mark)
+---
 
-## 🚀 Quick Start
+## ✨ Key Features
 
-### Demo Accounts
-Use these credentials to explore the platform (password: `demo1234`):
+### 👨‍🎓 For Students (Aspirants)
+1. **Realistic Exam Interface**:
+   - Timer-based countdown (configurable, default 120 mins).
+   - Question palette (Answered, Marked for Review, Not Visited).
+   - Keyboard shortcuts for faster navigation (`A-D` for options, `M` to mark).
+2. **Instant Results & Analysis**:
+   - Total Score, Accuracy %, and Rank estimation.
+   - Section-wise breakdown (Physics, Chemistry, Biology, English).
+   - Detailed solution review with explanations after submission.
+3. **Progress Tracking**:
+   - Historical attempt history.
+   - Weak topic identification (e.g., "Weak in Optics" or "Strong in Genetics").
+   - Leaderboard to compare performance with peers.
+4. **Custom Practice**:
+   - Practice specific subjects or topics individually.
+   - Retry previously attempted questions.
 
-**Teacher:**
+### 👨‍🏫 For Teachers / Admins
+1. **Student Management**:
+   - Approve/Reject new student registrations.
+   - View individual student progress and activity logs.
+2. **Question Bank Management**:
+   - **Add Questions**: Create MCQs with images, explanations, and topic tags.
+   - **Bulk Upload**: Import questions via CSV/Excel.
+   - **PDF Builder**: Extract text from syllabus PDFs to create questions.
+   - **Edit/Delete**: Manage existing questions easily.
+3. **Class Analytics**:
+   - Overall class performance metrics.
+   - Identify common weak topics across all students.
+   - Export data to CSV for offline analysis.
+
+---
+
+## 📚 MEC CEE Syllabus Coverage
+
+The portal supports the standard MEC CEE Bachelor Level syllabus structure:
+
+| Subject | Topics Covered | Micro-Syllabus Codes |
+| :--- | :--- | :--- |
+| **Physics** | Mechanics, Heat, Light, Electricity, Modern Physics | P1–P8 |
+| **Chemistry** | Physical, Inorganic, Organic Chemistry | C1–C7 |
+| **Biology** | Zoology (Human Physiology, Genetics) & Botany | Z1–Z9, B1–B6 |
+| **English** | Grammar, Vocabulary, Comprehension | E1–E5 |
+
+*(Note: Topic codes can be customized in the backend to match specific college syllabi.)*
+
+---
+
+## 🚀 Quick Start & Demo
+
+### 🔑 Demo Credentials
+Use these accounts to test the platform immediately:
+
+**Teacher/Admin:**
 - Email: `teacher@cee.edu`
+- Password: `demo1234`
 
 **Students:**
-- Email: `student@cee.edu`
-- Email: `aayush@cee.edu`
-- Email: `sabina@cee.edu`
+- Email: `student@cee.edu` | `aayush@cee.edu` | `sabina@cee.edu`
+- Password: `demo1234`
 
-**Pending Approval:**
-- Email: `pending@cee.edu` (requires teacher approval)
+**Pending Account:**
+- Email: `pending@cee.edu` (Requires admin approval to login)
 
-## 🏗️ Architecture
+---
 
-### Frontend
-- **HTML5/CSS3/JavaScript**: Single-page application
-- **GitHub Pages**: Free static hosting
-- **Responsive Design**: Mobile-friendly interface
+## 🛠️ Technical Architecture
 
-### Backend
-- **Google Apps Script**: Server-side logic and API
-- **Google Sheets**: Database for storing questions, users, and attempts
-- **Web App Deployment**: RESTful API endpoints
+This project uses a **Serverless Architecture** to ensure zero hosting costs and high reliability.
 
-### Key Components
+| Component | Technology | Purpose |
+| :--- | :--- | :--- |
+| **Frontend** | HTML5, CSS3, JavaScript (Vanilla) | Responsive UI, Exam Engine, Dashboards |
+| **Hosting** | GitHub Pages | Free static site hosting |
+| **Backend API** | Google Apps Script (GAS) | Handles logic, authentication, scoring |
+| **Database** | Google Sheets | Stores Users, Questions, Attempts, Responses |
+| **Email Service** | Gmail (via MailApp) | Sends registration approvals and result reports |
+
+### File Structure
+```text
+Final/
+├── index.html              # Main Single Page Application (SPA)
+├── style.css               # Dark-themed responsive styling
+├── script.js               # Frontend logic & API calls
+├── cee_mock_all_in_one.gs  # Main Backend Logic (Auth, Exam, Scoring)
+├── model_exam_engine.gs    # Exam Engine & Question Randomization
+├── code.gs                 # Utility functions & Helpers
+├── CNAME                   # Custom domain configuration (optional)
+└── README.md               # Project documentation
