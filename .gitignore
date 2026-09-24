@@ -1,1 +1,15 @@
-Nothing should be ignored in this case, as the only modified file (`cee_mock_all_in_one.gs`) appears to be a source code file (.gs typically refers to Google Apps Script files) and there are no build artifacts, dependencies, or temporary files in the changes provided.
+# Dependencies (only needed for the optional dev tooling in scripts/)
+node_modules/
+package-lock.json
+
+# Editor / OS noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# Local env / secrets — never commit Apps Script deployment ids or keys
+.env
+.env.local
+.clasp.json

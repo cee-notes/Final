@@ -15,7 +15,22 @@
  * - Biology: 80 questions (40%) - Botany & Zoology, Class 11 & 12
  * - MAT: 20 questions (10%)
  * ============================================================================
+ * STANDALONE / OPTIONAL FILE
+ *   This is a self-contained alternative engine that keeps its own sheets
+ *   (MODEL_EXAM_SHEETS below) and its own column layout. It is NOT used by the
+ *   portal in index.html + cee_mock_all_in_one.gs — that pair already builds
+ *   CEE-pattern papers (see CEE_BLUEPRINT_). Deploy this file only in a
+ *   separate Apps Script project, or you will end up with two engines writing
+ *   to the same spreadsheet.
+ * ============================================================================
  */
+
+// Sheet names are namespaced so this engine can never collide with the
+// portal's own "Questions" tab, which uses a completely different layout.
+const MODEL_EXAM_SHEETS = {
+  QUESTIONS: 'ModelExamQuestions',
+  RESULTS:   'ModelExamResults'
+};
 
 // --- EXAM CONFIGURATION ---
 const MODEL_EXAM_CONFIG = {
@@ -56,7 +71,12 @@ const MODEL_EXAM_CONFIG = {
       'Zoology - Reproduction': 8,       // Human reproduction, Embryology
       'Zoology - Evolution & Ecology': 7 // Evolution, Ecosystem, Conservation
     },
-    MAT
+    // Mental Ability Test — 20 questions (10%)
+    MAT: {
+      'Verbal Reasoning':     7,
+      'Numerical Reasoning':  7,
+      'Logical Reasoning':    6
+    }
   }
 };
 
@@ -67,11 +87,11 @@ const MODEL_EXAM_CONFIG = {
  */
 function generateModelExamSet() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let qSheet = ss.getSheetByName('Questions');
+  let qSheet = ss.getSheetByName(MODEL_EXAM_SHEETS.QUESTIONS);
   
-  // Create Questions sheet if not exists
+  // Create the question sheet if it does not exist yet
   if (!qSheet) {
-    qSheet = ss.insertSheet('Questions');
+    qSheet = ss.insertSheet(MODEL_EXAM_SHEETS.QUESTIONS);
     qSheet.appendRow(['ID', 'Subject', 'Chapter', 'Topic', 'Question', 'OptionA', 'OptionB', 'OptionC', 'OptionD', 'Answer', 'Explanation', 'Difficulty']);
     seedDemoQuestions_(qSheet); // Add demo questions
   }
@@ -252,7 +272,8 @@ function submitModelExam(userAnswers) {
       subjectWise[subject] = { correct: 0, wrong: 0, unattempted: 0 };
     }
     
-    if (!ans.selectedOption || ans.selectedOption === null) {
+    // NB: 0 ("option A") is falsy — only null/undefined/'' mean "not attempted"
+    if (ans.selectedOption === null || ans.selectedOption === undefined || ans.selectedOption === '') {
       unattempted++;
       subjectWise[subject].unattempted++;
       return;
@@ -281,7 +302,7 @@ function submitModelExam(userAnswers) {
     success: true,
     score: parseFloat(score.toFixed(2)),
     maxScore: MODEL_EXAM_CONFIG.TOTAL_MARKS,
-    percentage: ((score / MODEL_EXAM_CONFIG.TOTAL_MARKS) * 100).toFixed(2),
+    percentage: ((score / Math.max(1, userAnswers.length * MODEL_EXAM_CONFIG.MARKS_PER_QUESTION)) * 100).toFixed(2),
     totalQuestions: userAnswers.length,
     correct: correct,
     wrong: wrong,
@@ -323,10 +344,10 @@ function getGrading_(score) {
 
 function saveExamResult_(email, score, correct, wrong, unattempted, subjectWise) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let resultSheet = ss.getSheetByName('ModelExamResults');
+  let resultSheet = ss.getSheetByName(MODEL_EXAM_SHEETS.RESULTS);
   
   if (!resultSheet) {
-    resultSheet = ss.insertSheet('ModelExamResults');
+    resultSheet = ss.insertSheet(MODEL_EXAM_SHEETS.RESULTS);
     resultSheet.appendRow([
       'Timestamp', 'Email', 'Score', 'MaxScore', 'Percentage',
       'Correct', 'Wrong', 'Unattempted',
@@ -365,13 +386,13 @@ function seedDemoQuestions_(sheet) {
     ['q-4', 'MAT', 'Grammar', 'Tenses', 'Choose the correct form: She ___ to school every day.', 'go', 'goes', 'going', 'gone', 1, 'Third person singular requires -s', 'Easy']
   ];
   
-  // Duplicate to have enough for testing
+  // Duplicate to have enough for testing. One setValues() beats 200 appendRow()
+  // calls — the old loop took minutes and burned through the execution quota.
+  const rows = [];
   for (let i = 0; i < 50; i++) {
-    demos.forEach(d => {
-      const newId = `q-demo-${i}-${d[0]}`;
-      sheet.appendRow([newId, ...d.slice(1)]);
-    });
+    demos.forEach(d => rows.push([`q-demo-${i}-${d[0]}`, ...d.slice(1)]));
   }
+  sheet.getRange(sheet.getLastRow() + 1, 1, rows.length, rows[0].length).setValues(rows);
 }
 
 /**
