@@ -270,3 +270,21 @@ contactForm.addEventListener("submit", async (e) => {
    9. FOOTER YEAR
    ============================================================ */
 yearEl.textContent = new Date().getFullYear();
+// ==========================================
+// DARK MODE TOGGLE LOGIC
+// ==========================================
+const themeToggle = document.getElementById('themeToggle');
+const currentTheme = localStorage.getItem('cee_theme') || 'light';
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem('cee_theme', theme);
+  themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
+}
+
+applyTheme(currentTheme);
+
+themeToggle.addEventListener('click', () => {
+  const newTheme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  applyTheme(newTheme);
+});
