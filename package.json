@@ -1,8 +1,8 @@
 {
   "name": "cee-mock-portal",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "private": true,
-  "description": "MEC CEE bachelor-level mock test portal — static frontend (GitHub Pages) + Google Apps Script backend",
+  "description": "MECEE-BL 2026 mock test portal \u2014 model exam of the day, difficulty-weighted CEE-pattern papers, static frontend (GitHub Pages) + Google Apps Script backend",
   "type": "module",
   "scripts": {
     "build": "node scripts/build-gas.mjs",
