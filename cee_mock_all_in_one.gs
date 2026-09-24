@@ -2449,7 +2449,11 @@ function emailResult_(u, r){
       '<tr style="background:#f0f2fa"><th>#</th><th>Question</th><th>Outcome</th></tr>' + rows + '</table>' : '') +
     '<br>Sign in to review your answers.');
 }
-
+git clone https://github.com/cee-notes/Final-sept.git && cd Final-sept
+git checkout -b logo-branding
+git apply /path/to/arena-logo-changes.patch   # download it from this session first
+npm install && npm run build && npm test
+git commit -am "Inline the CEE Notes logo for the favicon and brand marks" && git push -u origin logo-branding
 function reviewRowsForEmail_(attemptId){
   try{
     var bank = bank_();
