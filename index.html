@@ -582,6 +582,45 @@ kbd{background:var(--panel2);border:1px solid var(--line2);border-bottom-width:2
   *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
   html{scroll-behavior:auto}
 }
+
+/* ===== v6 — model exam of the day, difficulty, syllabus browser ===== */
+.daily-card{border:1px solid rgba(251,191,36,.25);background:linear-gradient(135deg,rgba(251,191,36,.07),transparent 55%)}
+.daily-card .dc-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.daily-card .dc-head h3{display:flex;align-items:center;gap:9px;font-size:15.5px;margin:0}
+.dc-date{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--warn);white-space:nowrap}
+.daily-card .dc-body{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-top:12px}
+.dc-meta{font-size:13.5px;color:var(--mut)}
+.dc-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.dc-status{font-size:13px;font-weight:600}
+.dc-status.done{color:var(--ok)}
+.dc-admin-body{display:flex;flex-direction:column;gap:12px;margin-top:10px}
+.dc-admin-state{margin-left:auto;font-size:12.5px;color:var(--mut);font-weight:600}
+.dc-switch{display:inline-flex;align-items:center;gap:9px;font-size:13px;color:var(--mut);cursor:pointer;user-select:none}
+.dc-switch input{position:absolute;opacity:0;pointer-events:none}
+.dc-slider{width:36px;height:20px;border-radius:20px;background:var(--edge);position:relative;transition:background .2s;flex:none}
+.dc-slider::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--card);transition:left .2s}
+.dc-switch input:checked + .dc-slider{background:var(--ok,#34d399)}
+.dc-switch input:checked + .dc-slider::after{left:18px}
+.dc-myrank{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:12px;padding:10px 14px;border-radius:12px;background:rgba(251,191,36,.09);font-size:13.5px}
+.dc-myrank b{color:var(--warn)}
+.syl-group{margin:14px 0 4px;font-size:13px;font-weight:700;color:var(--warn);letter-spacing:.03em;text-transform:uppercase}
+.syl-fmt{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:10px 0}
+.syl-fmt div{background:rgba(79,124,255,.07);border-radius:10px;padding:8px 12px;font-size:12.5px}
+.syl-fmt b{display:block;font-size:15px;margin-bottom:2px}
+.syl-subj{margin:14px 0 6px;display:flex;align-items:baseline;gap:8px;font-weight:700;font-size:14.5px}
+.syl-subj .n{color:var(--mut);font-weight:600;font-size:12.5px}
+.syl-unit{border:1px solid var(--edge);border-radius:10px;margin:6px 0;overflow:hidden}
+.syl-unit summary{cursor:pointer;padding:9px 13px;font-size:13px;font-weight:600;list-style:none;display:flex;gap:8px;align-items:baseline}
+.syl-unit summary::-webkit-details-marker{display:none}
+.syl-unit summary::after{content:'▸';margin-left:auto;color:var(--mut);transition:transform .15s}
+.syl-unit[open] summary::after{transform:rotate(90deg)}
+.syl-unit .n{color:var(--warn);font-size:12px;font-weight:700}
+.syl-unit p{margin:0;padding:2px 14px 11px;font-size:12.8px;color:var(--mut);line-height:1.55}
+.syl-sample{margin-top:6px;padding:10px 14px;font-size:12.8px;background:rgba(52,211,153,.07);border-radius:10px}
+.syl-sample b{display:block;margin-bottom:4px;color:var(--ok,#34d399)}
+.pill.model{background:rgba(251,191,36,.15);color:var(--warn)}
+.fchip.f-model.on{background:rgba(251,191,36,.16);border-color:rgba(251,191,36,.5)}
+@media print{.daily-card,.dc-admin-body,#btnDailyBoard{display:none!important}}
 </style>
 <script>
 /* Apply the saved theme before first paint so there is no flash of the wrong colours. */
@@ -604,6 +643,7 @@ kbd{background:var(--panel2);border:1px solid var(--line2);border-bottom-width:2
     <div>CEE Mock Portal<small>MBBS / BDS ENTRANCE PRACTICE</small></div>
   </div>
   <div class="tb-right" id="tbRight">
+    <button class="btn btn-icon btn-ghost" id="btnSyllabus" type="button" title="Official MECEE-BL 2026 syllabus" aria-label="Syllabus browser">&#128218;</button>
     <button class="btn btn-icon btn-ghost" id="themeToggle" type="button" title="Switch to light theme" aria-label="Switch to light theme">&#9790;</button>
     <button class="btn btn-icon btn-ghost" id="btnOutbox" title="Simulated email outbox (preview only)" style="display:none">&#9993;<span class="ob-badge" id="obCount" style="display:none">0</span></button>
     <button class="btn btn-icon btn-ghost" id="btnInbox" title="Inbox — messages from students" style="display:none">&#128229;<span class="ob-badge" id="inbCount" style="display:none">0</span></button>
@@ -662,6 +702,21 @@ kbd{background:var(--panel2);border:1px solid var(--line2);border-bottom-width:2
     <div class="stat" style="--sc:#2dd4bf"><div class="si">&#9997;</div><div class="sv" id="stAns">0</div><div class="sl">Questions answered</div></div>
   </div>
 
+  <div class="card daily-card mb" id="dailyCard" style="display:none">
+    <div class="dc-head">
+      <h3><span class="ic" style="background:rgba(251,191,36,.16)">&#128197;</span>Model exam of the day</h3>
+      <span class="dc-date" id="dcDate"></span>
+    </div>
+    <div class="dc-body">
+      <div class="dc-meta" id="dcMeta"></div>
+      <div class="dc-actions">
+        <span class="dc-status" id="dcStatus"></span>
+        <button class="btn btn-p" id="btnDailyStart">&#9654; Start model exam</button>
+        <button class="btn" id="btnDailyBoard">&#128944; Daily leaderboard</button>
+      </div>
+    </div>
+  </div>
+
   <div class="row" style="margin-bottom:16px">
     <button class="btn btn-p btn-lg" id="btnStartMock">&#9654; Start mock exam</button>
     <button class="btn btn-lg" id="btnPractice">&#9998; Custom practice</button>
@@ -698,6 +753,7 @@ kbd{background:var(--panel2);border:1px solid var(--line2);border-bottom-width:2
       <button class="fchip on" id="chipAttAll">All <b id="cntAttAll">0</b></button>
       <button class="fchip" id="chipAttMock">Mocks <b id="cntAttMock">0</b></button>
       <button class="fchip f-practice" id="chipAttPrac">Practice <b id="cntAttPrac">0</b></button>
+      <button class="fchip f-model" id="chipAttModel">Model <b id="cntAttModel">0</b></button>
     </div>
     <div class="tblwrap">
       <table class="tbl">
@@ -715,6 +771,18 @@ kbd{background:var(--panel2);border:1px solid var(--line2);border-bottom-width:2
     <div class="stat" style="--sc:#fbbf24"><div class="si">&#9203;</div><div class="sv" id="tStatPending">0</div><div class="sl">Pending approvals</div></div>
     <div class="stat" style="--sc:#2dd4bf"><div class="si">&#128218;</div><div class="sv" id="tStatBank">0</div><div class="sl">Questions in bank</div></div>
     <div class="stat" style="--sc:#34d399"><div class="si">&#128221;</div><div class="sv" id="tStatAttempts">0</div><div class="sl">Total attempts</div></div>
+  </div>
+
+  <div class="card mb" id="dailyAdmin">
+    <h3><span class="ic" style="background:rgba(251,191,36,.16)">&#128197;</span>Model exam of the day
+      <span class="dc-admin-state" id="daState"></span></h3>
+    <div class="dc-admin-body">
+      <div class="small dim" style="max-width:560px">One fixed paper per date — the same questions in the same order for every student, one attempt each, with a daily leaderboard. Generated fresh each day from the date seed (or pre-generated by the autopilot).</div>
+      <div class="row" style="gap:10px;flex-wrap:wrap">
+        <button class="btn" id="btnDailyGen">&#9851; Generate today\'s paper</button>
+        <label class="dc-switch"><input type="checkbox" id="swAutopilot"><span class="dc-slider"></span> Autopilot — prepare tomorrow\'s paper daily at 20:00</label>
+      </div>
+    </div>
   </div>
 
   <div class="card mb" id="caCard">
@@ -901,7 +969,7 @@ kbd{background:var(--panel2);border:1px solid var(--line2);border-bottom-width:2
     <div class="pr-grid">
       <div><label>Questions</label>
         <div class="small dim" id="prCountHint" style="display:none;padding:9px 0">Fixed by the CEE blueprint — up to 200, as many as the bank allows.</div>
-        <select id="prCount"><option value="5">5</option><option value="8" selected>8</option><option value="10">10</option><option value="15">15</option><option value="20">20</option><option value="0">All available</option></select>
+        <select id="prCount"><option value="5">5</option><option value="10">10</option><option value="15">15</option><option value="20" selected>20</option><option value="30">30</option><option value="0">All available</option></select>
       </div>
       <div><label>Session</label>
         <div class="sw-row" style="border:0;padding:6px 0"><div class="sw-l"><b>Timed</b><span id="prTimeHint">60 minutes, auto-submit</span></div>
@@ -939,8 +1007,10 @@ kbd{background:var(--panel2);border:1px solid var(--line2);border-bottom-width:2
       <div><label>Subject *</label>
         <select id="qfSection"><option value="">— select —</option></select></div>
     </div>
-    <div class="grid g2 mb">
+    <div class="grid g3 mb">
       <div><label>Topic</label><select id="qfTopic"><option value="">— none —</option></select></div>
+      <div><label>Difficulty</label>
+        <select id="qfDifficulty"><option value="easy">Easy</option><option value="medium" selected>Medium</option><option value="hard">Hard</option></select></div>
       <div><label>Image URL <span class="dim">(optional)</span></label><input id="qfImgUrl" placeholder="https://…"></div>
     </div>
     <div class="mb"><label>…or upload image <span class="dim">(auto-downscaled, max ~48KB)</span></label><input id="qfImgFile" type="file" accept="image/*"></div>
@@ -964,9 +1034,9 @@ kbd{background:var(--panel2);border:1px solid var(--line2);border-bottom-width:2
 <div class="modal" id="modalBulk"><div class="mbox w-lg">
   <div class="mhead"><h3>Bulk upload questions</h3><button class="mclose" data-close>&#10005;</button></div>
   <div class="mbody">
-    <div class="bulk-drop mb">Drop or <b id="btnBulkTemplate">download the CSV template</b> · columns: <code>Question,A,B,C,D,Answer,Section,Topic,Explanation</code></div>
+    <div class="bulk-drop mb">Drop or <b id="btnBulkTemplate">download the CSV template</b> · columns: <code>Question,A,B,C,D,Answer,Section,Topic,Explanation,Difficulty</code></div>
     <div class="mb"><label>Upload CSV / XLSX file</label><input type="file" id="bulkFile" accept=".csv,.xlsx,.xls"></div>
-    <div class="mb"><label>…or paste CSV rows</label><textarea id="bulkPaste" rows="7" placeholder="Question,A,B,C,D,Answer,Section,Topic,Explanation&#10;What is H2O?,Hydrogen oxide,Heavy oxygen,Hydro ozone,Hot water,A,Chemistry,C1,Water is hydrogen oxide…"></textarea></div>
+    <div class="mb"><label>…or paste CSV rows</label><textarea id="bulkPaste" rows="7" placeholder="Question,A,B,C,D,Answer,Section,Topic,Explanation,Difficulty&#10;What is H2O?,Hydrogen oxide,Heavy oxygen,Hydro ozone,Hot water,A,Chemistry,C1,Water is hydrogen oxide,medium"></textarea></div>
     <div class="row mb"><button class="btn btn-p" id="btnBulkParse">Parse rows</button>
       <button class="btn" id="btnBulkValidate" disabled>&#9989; Validate &amp; preview</button>
       <span class="small dim" id="bulkInfo" style="align-self:center"></span></div>
@@ -1049,6 +1119,35 @@ kbd{background:var(--panel2);border:1px solid var(--line2);border-bottom-width:2
 </div></div>
 
 <!-- confirm -->
+<!-- daily leaderboard -->
+<div class="modal" id="modalDailyBoard"><div class="mbox w-lg">
+  <div class="mhead"><h3 id="dbTitle">Daily leaderboard</h3><button class="mclose" data-close>&#10005;</button></div>
+  <div class="mbody">
+    <div class="dc-myrank" id="dbMyRank" style="display:none"></div>
+    <div class="tblwrap">
+      <table class="tbl">
+        <thead><tr><th>#</th><th>Student</th><th>Score</th><th>Accuracy</th></tr></thead>
+        <tbody id="dbBody"></tbody>
+      </table>
+    </div>
+    <div class="small muted mb" style="font-weight:600;margin-top:16px">My last 7 days</div>
+    <div class="tblwrap">
+      <table class="tbl">
+        <thead><tr><th>Date</th><th>Score</th><th>Accuracy</th><th>My rank</th><th>Participants</th></tr></thead>
+        <tbody id="dbHist"></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="mfoot"><button class="btn" data-close>Close</button></div>
+</div></div>
+
+<!-- official syllabus browser -->
+<div class="modal" id="modalSyllabus"><div class="mbox w-xl">
+  <div class="mhead"><h3>Official syllabus — MECEE-BL 2026</h3><button class="mclose" data-close>&#10005;</button></div>
+  <div class="mbody" id="sylBody"></div>
+  <div class="mfoot"><span class="small dim">Medical Education Commission, Sanothimi, Bhaktapur — third revision, April 28, 2026</span><button class="btn" data-close>Close</button></div>
+</div></div>
+
 <div class="modal" id="modalConfirm"><div class="mbox w-sm">
   <div class="mhead"><h3 id="cfTitle">Are you sure?</h3></div>
   <div class="mbody"><p class="muted" id="cfText" style="font-size:13.5px"></p></div>
@@ -1241,16 +1340,106 @@ var sha256 = (function(){
   };
 })();
 
-/* ---------- catalogue constants ---------- */
-var SECTIONS = ['Physics','Chemistry','Biology','Botany','Maths'];
+/* ---------- catalogue constants (MECEE-BL 2026, third revision) ---------- */
+var SECTIONS = ['Zoology','Botany','Chemistry','Physics','MAT'];
 var TOPICS = {
-  Physics:{P1:'Mechanics',P2:'Heat & Thermodynamics',P3:'Waves & Optics',P4:'Electricity & Magnetism',P5:'Modern Physics',P6:'Electronics',P7:'Units & Measurements',P8:'Vector & Kinematics'},
-  Chemistry:{C1:'Atomic Structure',C2:'Chemical Bonding',C3:'Stoichiometry',C4:'Thermodynamics',C5:'Organic Chemistry',C6:'Acids & Bases',C7:'Periodic Table'},
-  Biology:{Z1:'Human Physiology',Z2:'Cell Biology',Z3:'Genetics',Z4:'Human Diseases',Z5:'Ecology',Z6:'Evolution',Z7:'Animal Behavior',Z8:'Circulatory System',Z9:'Respiratory System'},
-  Botany:{B1:'Plant Anatomy',B2:'Plant Physiology',B3:'Photosynthesis',B4:'Plant Ecology',B5:'Plant Reproduction',B6:'Economic Botany'},
-  Maths:{M1:'Algebra',M2:'Trigonometry',M3:'Calculus',M4:'Geometry',M5:'Probability',M6:'Statistics',M7:'Sets & Functions',M8:'Matrices',M9:'Coordinate Geometry'}
+  Zoology:{Z1:'Evolutionary Biology',Z2:'Animal Diversity & Classification',Z3:'Animal Tissues & Histology',
+           Z4:'Study of Selected Animals',Z5:'Human Biology & Physiology',Z6:'Microbial Diseases & Immunology',
+           Z7:'Medical Technology & Applied Biology',Z8:'Biota, Environment & Conservation'},
+  Botany:{B1:'Basic Components of Life',B2:'Biodiversity',B3:'Ecology & Vegetation',B4:'Cell Biology',
+          B5:'Genetics',B6:'Plant Anatomy',B7:'Plant Physiology',B8:'Developmental Botany',B9:'Applied Botany'},
+  Chemistry:{C1:'Physical Chemistry',C2:'Inorganic Chemistry',C3:'Organic Chemistry',C4:'Applied Chemistry',C5:'Analytical Chemistry'},
+  Physics:{P1:'Mechanics',P2:'Heat & Thermodynamics',P3:'Waves & Optics',
+           P4:'Current Electricity & Magnetism',P5:'Electrostatics & Capacitors',P6:'Modern Physics'},
+  MAT:{A1:'Verbal Reasoning',A2:'Numerical Reasoning',A3:'Logical Sequencing',A4:'Spatial Relation / Abstract Reasoning'}
 };
-var BULK_KEYS = ['QUESTION','A','B','C','D','ANSWER','SECTION','TOPIC','EXPLANATION','IMAGE'];
+var DIFFICULTIES = ['easy','medium','hard'];
+/* Official MECEE-BL 2026 syllabus (third revision, April 28, 2026) as published
+   by the Medical Education Commission — powers the in-app syllabus browser. */
+var SYLLABUS = {
+  title:'MECEE-BL Syllabus 2026', revision:'Third review — April 28, 2026',
+  authority:'Government of Nepal · Medical Education Commission · Sanothimi, Bhaktapur',
+  history:'2020 syllabus · 1st rev. Mar 10, 2021 · 2nd rev. Aug 18, 2025 · 3rd rev. Apr 28, 2026',
+  format:[
+    {k:'200', l:'MCQs — single best response (Type A), four options'},
+    {k:'+1 / −0.25', l:'correct · wrong · 0 skipped'},
+    {k:'3 hours', l:'54 seconds per question'},
+    {k:'50th', l:'percentile = qualifying pass mark'},
+    {k:'50:30:20', l:'recall : understanding : application mix'}
+  ],
+  groups:[
+    {name:'Group I — MBBS, BDS, BSc Nursing / BSc Midwifery, BASLP & B. Perfusion Technology',
+     weights:'Zoology 40 · Botany 40 · Chemistry 50 · Physics 50 · MAT 20'},
+    {name:'Group II — BAMS, BSc MLT, BSc MIT / BSc Radiotherapy Technology, BPT, B Pharm & B Optometry',
+     weights:'Zoology 40 · Botany 40 · Chemistry 40 · Physics 40 · PCL specific subject 20 · MAT 20'},
+    {name:'Group III — BPH (Bachelor in Public Health)',
+     weights:'Zoology 40 · Botany 40 · Chemistry 40 · Physics 40 · Pre-requisite Health Knowledge 20 · MAT 20'},
+    {name:'Group IV — BNS / BMS (entry only from PCL nursing)',
+     weights:'Core Subjects (PCL) 150 · Basic & Integrated Health Science applied to Nursing 30 · MAT 20'}
+  ],
+  subjects:[
+    {name:'Zoology', n:40, units:[
+      ['Z1',3,'Evolutionary Biology','Origin of life, evidences of evolution, theories (Lamarckism, Darwinism, Neo-Darwinism), human evolution.'],
+      ['Z2',4,'Animal Diversity and Classification','Diagnostic features and classification from Protozoa to Chordata.'],
+      ['Z3',4,'Animal Tissues and Histology','Epithelial, connective, muscular, nervous tissues — structure, location, function.'],
+      ['Z4',6,'Study of Selected Animals','Plasmodium, Earthworm (Pheretima), Frog (Rana) — morphology, body systems, physiology, economic importance.'],
+      ['Z5',15,'Human Biology and Physiology','Digestive, Respiratory, Circulatory, Excretory, Nervous, Sense organs, Endocrinology, Reproductive system.'],
+      ['Z6',4,'Microbial Diseases and Immunology','Diseases (typhoid, TB, HIV, etc.), immunity, vaccines.'],
+      ['Z7',2,'Medical Technology and Applied Biology','Tissue/organ transplantation, IVF, amniocentesis, transgenic animals, applied microbiology.'],
+      ['Z8',2,'Biota, Environment and Conservation','Animal behavior, environmental pollution, adaptations, conservation biology (biodiversity, protected areas, endangered species of Nepal).']
+    ]},
+    {name:'Botany', n:40, units:[
+      ['B1',2,'Basic Components of Life','Carbohydrates, lipids, proteins, minerals, enzymes.'],
+      ['B2',9,'Biodiversity','Classification systems, Monera & virus, Fungi & lichens, Algae, Bryophytes, Pteridophytes, Gymnosperms, Angiosperms (families: Brassicaceae, Solanaceae, Fabaceae, Liliaceae), economic importance, selected medicinal plants of Nepal.'],
+      ['B3',4,'Ecology and Vegetation','Ecosystem ecology, biogeochemical cycles, vegetation and adaptation, forest types of Nepal.'],
+      ['B4',5,'Cell Biology','Prokaryotic/eukaryotic cells, cell organelles, cell cycle (mitosis/meiosis).'],
+      ['B5',6,'Genetics','DNA/RNA, Mendelian genetics, sex-linked inheritance, mutation & polyploidy, genetic disorders.'],
+      ['B6',3,'Plant Anatomy','Plant tissues, vascular bundles, T.S. of monocot/dicot root, stem, leaf.'],
+      ['B7',6,'Plant Physiology','Water relations, transpiration, photosynthesis, respiration, plant growth (auxin, gibberellins, cytokinins).'],
+      ['B8',2,'Developmental Botany','Asexual reproduction, sporogenesis, pollination, fertilization, embryo structure.'],
+      ['B9',3,'Applied Botany','Plant tissue culture, genetic engineering, biofertilizers, plant breeding, food safety.']
+    ]},
+    {name:'Chemistry', n:50, units:[
+      ['C1',17,'Physical Chemistry','Basic concepts, stoichiometry, atomic structure, periodic table, chemical bonding, redox reactions, states of matter, chemical equilibrium, ionic equilibrium, chemical kinetics, electrochemistry, thermodynamics, nuclear chemistry.'],
+      ['C2',10,'Inorganic Chemistry','Non-metals (H, O, N, P, halogens, noble gases), metals (metallurgical principles, alkali/alkaline earth metals, transition metals, corrosion).'],
+      ['C3',17,'Organic Chemistry','General organic chemistry, hydrocarbons, aromatic hydrocarbons, haloalkanes/haloarenes, alcohols/phenols, ethers, aldehydes/ketones, carboxylic acids & derivatives, nitro-compounds, amines, organometallic compounds.'],
+      ['C4',3,'Applied Chemistry','Chemical industry, modern manufacture of acids/soda/urea, applications of elements/compounds, chemistry in service to mankind (polymers, dyes, drugs, pesticides).'],
+      ['C5',3,'Analytical Chemistry','Chemical tests, separation techniques, types of titration.']
+    ]},
+    {name:'Physics', n:50, units:[
+      ['P1',10,'Mechanics','Physical quantities, kinematics, dynamics, rotational dynamics, fluid statics & dynamics, circular & periodic motion, gravity, elasticity.'],
+      ['P2',7,'Heat and Thermodynamics','Thermal energy, thermometers, thermal expansion, quantity of heat, ideal gas, laws of thermodynamics.'],
+      ['P3',8,'Waves and Optics','Wave motion, stationary waves, acoustic phenomena, reflection, refraction, dispersion, interference, diffraction, polarization.'],
+      ['P4',9,'Current Electricity and Magnetism','Electrical quantities, circuits, thermoelectric effect, alternating currents, magnetic properties, magnetic field, electromagnetic induction.'],
+      ['P5',4,'Electrostatics and Capacitors','Electric charge & field, potential, Gauss\'s law, capacitors.'],
+      ['P6',12,'Modern Physics','Nuclear physics, electron, photon, wave-particle duality, radioactivity, solid & semiconductor devices, particle physics & recent trends.']
+    ]},
+    {name:'MAT', n:20, units:[
+      ['A1',5,'Verbal Reasoning','Direction & distance, blood relations, coding-decoding, analogy, classification, statement reasoning.'],
+      ['A2',5,'Numerical Reasoning','Percentage, ratio & proportion, series completion, data interpretation, arithmetic reasoning.'],
+      ['A3',5,'Logical Sequencing','Number & letter series, ranking & ordering, sitting arrangement puzzles, syllogistic patterns.'],
+      ['A4',5,'Spatial Relation / Abstract Reasoning','2-D nets & 3-D figures, mirror & water images, figure analogy, pattern completion, odd figure out.']
+    ]}
+  ],
+  samples:[
+    ['General','Which one of the following drugs is approved by FDA for treatment of COVID-19?','Remdesivir'],
+    ['MAT — Verbal','Rita goes 30 km North, turns right and goes 20 km, turns right and goes 30 km. How far and in what direction is she from her starting point?','20 km east'],
+    ['MAT — Numerical','The length and breadth of a rectangle are increased by 15% and 25% respectively. What is the percentage increase in the area?','44%'],
+    ['MAT — Logical','Look at this series: 53, 53, 40, 40, 27, 27, … Which pair of numbers should come next?','14']
+  ]
+};
+function normalizeDifficultyClient(d){
+  d = String(d == null ? '' : d).toLowerCase().trim();
+  return DIFFICULTIES.indexOf(d) >= 0 ? d : 'medium';
+}
+/* Pre-2026 banks may still carry legacy subject names — remapped on read so
+   old rows keep working inside the new blueprint (twin of legacySection_). */
+var LEGACY_SECTIONS = {biology:'Zoology', maths:'MAT', math:'MAT', mathematics:'MAT', mentalability:'MAT'};
+function legacySectionClient(s){
+  var k = normClient(s).replace(/[^a-z]/g, '');
+  return LEGACY_SECTIONS[k] || String(s || '');
+}
+var BULK_KEYS = ['QUESTION','A','B','C','D','ANSWER','SECTION','TOPIC','EXPLANATION','IMAGE','DIFFICULTY'];
 
 /* ---------- client exam-set maths (1:1 twins of the GAS underscore versions) ---------- */
 function normClient(s){ return String(s==null?'':s).toLowerCase().replace(/\s+/g,' ').trim(); }
@@ -1276,24 +1465,65 @@ function seededShuffleClient(arr, seed){
   }
   return out;
 }
-/* ---------- MEC CEE bachelor-level paper blueprint ----------
-   Official pattern: 200 MCQs / 180 minutes / +1 / −0.25.
-   Subject weighting: Physics 25%, Chemistry 25%, Biology 40% (zoology + botany),
-   MAT 10%. A mock draws this shape from the bank, keeps the subjects grouped the
-   way the real paper does, and scales the clock to the paper it could actually
-   build (0.9 min per question) so a small bank does not hand out a 3-hour timer.
+/* ---------- MECEE-BL 2026 bachelor-level paper blueprint ----------
+   Official pattern: 200 MCQs / 180 minutes (54 s per question) / +1 / −0.25.
+   Subject weighting: Zoology 20%, Botany 20%, Chemistry 25%, Physics 25%,
+   MAT 10%. A mock draws this shape from the bank, keeps the subjects grouped
+   the way the real paper does, is difficulty-weighted ~20/60/20 easy/medium/
+   hard, and scales the clock to the paper it could actually build so a small
+   bank does not hand out a 3-hour timer.
    KEEP IN SYNC with the same block in cee_mock_all_in_one.gs — the server
    rebuilds the identical set when it scores an attempt.                        */
 var CEE_BLUEPRINT = [
-  {section:'Physics',   n:50},
-  {section:'Chemistry', n:50},
-  {section:'Biology',   n:40},
+  {section:'Zoology',   n:40},
   {section:'Botany',    n:40},
-  {section:'Maths',     n:20}
+  {section:'Chemistry', n:50},
+  {section:'Physics',   n:50},
+  {section:'MAT',       n:20}
 ];
-var CEE_TOTAL_Q = 200, CEE_MIN_PER_Q = 0.9, CEE_MIN_MINUTES = 10, CEE_MAX_MINUTES = 240;
+var CEE_TOTAL_Q = 200, CEE_MAX_MINUTES = 240, CEE_DIFFICULTY_MIX = {easy:0.2, medium:0.6, hard:0.2};
+var SECONDS_PER_QUESTION = 54, MIN_EXAM_MINUTES = 10;
+var QUESTIONS_PER_EXAM = 20, MODEL_HISTORY_DAYS = 7, MODEL_AUTO_HOUR = 20;
+var MAX_QUESTIONS_RETURNED = 1000, SESSION_HOURS = 24, EXAM_GRACE_MS = 120000;
+var LOGIN_MAX_FAILS = 5, LOGIN_LOCK_SECONDS = 120, MODEL_DEFAULT_COUNT = 20;
 function ceeDurationForClient(n){
-  return Math.max(CEE_MIN_MINUTES, Math.min(CEE_MAX_MINUTES, Math.round((n || 0) * CEE_MIN_PER_Q)));
+  var mins = Math.round((n || 0) * SECONDS_PER_QUESTION / 60);
+  return Math.max(MIN_EXAM_MINUTES, Math.min(CEE_MAX_MINUTES, mins));
+}
+/* Deterministic difficulty-weighted pick (twin of pickByDifficulty_ in the .gs):
+   keeps the seeded pool order, takes ~20/60/20 where the bank allows, then
+   tops up from whatever is left. */
+function pickByDifficultyClient(pool, n){
+  if(pool.length <= n) return pool.slice();
+  var byDiff = {easy:[], medium:[], hard:[]};
+  pool.forEach(function(q){ byDiff[normalizeDifficultyClient(q.difficulty)].push(q); });
+  var chosen = {};
+  DIFFICULTIES.forEach(function(d){
+    var want = Math.min(byDiff[d].length, Math.round(n * CEE_DIFFICULTY_MIX[d]));
+    for(var i = 0; i < want; i++) chosen[byDiff[d][i].id] = true;
+  });
+  var out = pool.filter(function(q){ return chosen[q.id]; });
+  if(out.length < n){
+    var seen = {};
+    out.forEach(function(q){ seen[q.id] = true; });
+    for(var j = 0; j < pool.length && out.length < n; j++){
+      if(!seen[pool[j].id]){ out.push(pool[j]); seen[pool[j].id] = true; }
+    }
+  }
+  return out.slice(0, n);
+}
+/* Largest-remainder apportionment (twin of apportion_): 20 questions across
+   the 40/40/50/50/20 blueprint is exactly 4/4/5/5/2. */
+function apportionClient(total, weights){
+  var base = weights.reduce(function(a, b){ return a + b; }, 0);
+  var raw = weights.map(function(w){ return total * w / base; });
+  var counts = raw.map(Math.floor);
+  var rem = total - counts.reduce(function(a, b){ return a + b; }, 0);
+  raw.map(function(r, i){ return {i:i, f:r - Math.floor(r)}; })
+     .sort(function(a, b){ return b.f - a.f; })
+     .slice(0, rem)
+     .forEach(function(x){ counts[x.i]++; });
+  return counts;
 }
 function buildCeeMockSetClient(bank, seed){
   var bySection = {};
@@ -1304,8 +1534,11 @@ function buildCeeMockSetClient(bank, seed){
   var takes = [], rest = [];
   CEE_BLUEPRINT.forEach(function(b, i){
     var pool = seededShuffleClient(bySection[b.section] || [], seed + i * 7919);
-    takes.push(pool.slice(0, b.n));
-    pool.slice(b.n).forEach(function(q){ rest.push(q); });
+    var take = pickByDifficultyClient(pool, b.n);
+    takes.push(take);
+    var taken = {};
+    take.forEach(function(q){ taken[q.id] = true; });
+    pool.forEach(function(q){ if(!taken[q.id]) rest.push(q); });
   });
   var picked = takes.reduce(function(n, t){ return n + t.length; }, 0);
   if(picked < CEE_TOTAL_Q && rest.length){
@@ -1352,6 +1585,39 @@ function filterBankForPracticeClient(bank, opts){
     if(opts.topics.length && opts.topics.indexOf(String(q.topic||'').toUpperCase()) < 0) return false;
     return true;
   });
+}
+/* YYYY-MM-DD in the browser's local timezone (twin of dailyDateStr_). */
+function dailyDateStrClient(offsetDays){
+  var d = new Date();
+  if(offsetDays) d.setDate(d.getDate() + offsetDays);
+  var m = String(d.getMonth() + 1).padStart(2, '0'), day = String(d.getDate()).padStart(2, '0');
+  return d.getFullYear() + '-' + m + '-' + day;
+}
+/* The daily paper is seeded from the DATE alone — identical for every student
+   (twin of buildDailySet_). */
+function buildDailySetClient(dateStr, count, bank){
+  if(!bank.length) return [];
+  var seed = strSeedClient('cee-daily|' + dateStr);
+  var counts = apportionClient(count, CEE_BLUEPRINT.map(function(b){ return b.n; }));
+  var bySection = {};
+  bank.forEach(function(q){ (bySection[q.section] = bySection[q.section] || []).push(q); });
+  var takes = [], used = {};
+  CEE_BLUEPRINT.forEach(function(b, i){
+    var pool = seededShuffleClient(bySection[b.section] || [], seed + i * 7919);
+    var take = pickByDifficultyClient(pool, counts[i]);
+    takes.push(take);
+    take.forEach(function(q){ used[q.id] = true; });
+  });
+  var picked = takes.reduce(function(n, t){ return n + t.length; }, 0);
+  if(picked < count){
+    var rest = bank.filter(function(q){ return !used[q.id]; });
+    seededShuffleClient(rest, seed + 104729).slice(0, count - picked).forEach(function(q){
+      takes[takes.length - 1].push(q);
+    });
+  }
+  var out = [];
+  takes.forEach(function(t){ out = out.concat(t); });
+  return out.slice(0, count);
 }
 function buildExamSetClient(bank, opts, seed){
   if(opts.mode === 'mock') return buildCeeMockSetClient(bank, seed);
@@ -1402,7 +1668,7 @@ function callServer(fn){
      signs the user out once and sends them back to the login screen. */
   return p.catch(function(e){
     var msg = (e && e.message) || '';
-    if(fn !== 'restoreSession' && fn !== 'login' && P.user && /session expired/i.test(msg)) handleSessionExpired();
+    if(fn !== 'restoreSession' && fn !== 'loginUser' && P.user && /session expired/i.test(msg)) handleSessionExpired();
     throw e;
   });
 }
@@ -1431,35 +1697,41 @@ function getDeviceId(){
    MockApi — localStorage simulation of the Google Apps Script backend
    ================================================================================ */
 var MockApi = (function(){
-  var DB_KEY = 'cee_db_v1', SES_KEY = 'cee_session';
+  var DB_KEY = 'cee_db_v3', SES_KEY = 'cee_session';
 
-  /* ----- the 8-question fallback bank (identical to FALLBACK_BANK in the .gs) ----- */
+  /* ----- the 10-question fallback bank (identical to FALLBACK_BANK in the .gs) ----- */
   var CIRCUIT_IMG = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMTgwIiB2aWV3Qm94PSIwIDAgMzAwIDE4MCI+PHJlY3Qgd2lkdGg9IjMwMCIgaGVpZ2h0PSIxODAiIGZpbGw9IiNlZWYyZmIiLz48ZyBzdHJva2U9IiMxZTNhOGEiIHN0cm9rZS13aWR0aD0iMi41IiBmaWxsPSJub25lIiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02MCA0MCBoMTIwIHYtMTQgaDAgTTYwIDQwIHYxMDAgaDE4MCB2LTEwMCBoLTYwIi8+PHBhdGggZD0iTTE1MCAyNiB2MCIvPjwvZz48ZyBzdHJva2U9IiMxZTNhOGEiIHN0cm9rZS13aWR0aD0iMi41IiBmaWxsPSJub25lIj48cmVjdCB4PSIxMjAiIHk9IjEyMCIgd2lkdGg9IjYwIiBoZWlnaHQ9IjI2IiBmaWxsPSIjZmZmIi8+PHBhdGggZD0iTTYwIDEzMyBoNjAgTTE4MCAxMzMgaDYwIi8+PC9nPjx0ZXh0IHg9IjE1MCIgeT0iMTM4IiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTIiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiMxZTNhOGEiPjbOqSDigJYgM86pPC90ZXh0PjxnIHN0cm9rZT0iIzFlM2E4YSIgc3Ryb2tlLXdpZHRoPSIyLjUiIGZpbGw9Im5vbmUiPjxwYXRoIGQ9Ik02MCA1MiB2MjIiLz48cGF0aCBkPSJNNTIgNzQgaDE2IE01NSA4MCBoMTAgTTU4IDg2IGg0Ii8+PC9nPjx0ZXh0IHg9IjM4IiB5PSI4MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjEyIiBmaWxsPSIjMWUzYThhIj4xMlY8L3RleHQ+PHRleHQgeD0iMjI4IiB5PSI3MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjExIiBmaWxsPSIjMzM0MTU1IiB0cmFuc2Zvcm09InJvdGF0ZSg5MCAyMzYgNzApIj5iYXR0ZXJ5PC90ZXh0Pjx0ZXh0IHg9IjE1MCIgeT0iMTcwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTEiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM2NDc0OGIiPlBhcmFsbGVsIHJlc2lzdG9ycyBhY3Jvc3MgYSAxMiBWIGJhdHRlcnk8L3RleHQ+PC9zdmc+';
   var BANK = [
     {id:'q-1', text:'In the circuit shown, a 6 Ω and a 3 Ω resistor are connected in parallel across a 12 V battery of negligible internal resistance. What total current does the battery deliver?',
-     opts:['2 A','4 A','6 A','9 A'], answer:2, section:'Physics', topic:'P4',
+     opts:['2 A','4 A','6 A','9 A'], answer:2, section:'Physics', topic:'P4', difficulty:'hard',
      explanation:'Parallel resistance R = (6×3)/(6+3) = 2 Ω, so I = V/R = 12/2 = 6 A.', img:CIRCUIT_IMG},
     {id:'q-2', text:'A ball is thrown vertically upward with a speed of 20 m/s (g = 10 m/s²). What maximum height does it reach?',
-     opts:['10 m','20 m','40 m','5 m'], answer:1, section:'Physics', topic:'P1',
+     opts:['10 m','20 m','40 m','5 m'], answer:1, section:'Physics', topic:'P1', difficulty:'medium',
      explanation:'At the top v = 0, so h = v²/(2g) = 400/20 = 20 m.', img:''},
     {id:'q-3', text:'How many moles are present in 4.4 g of CO₂? (Molar mass = 44 g/mol)',
-     opts:['0.1 mol','0.2 mol','1 mol','2 mol'], answer:0, section:'Chemistry', topic:'C1',
+     opts:['0.1 mol','0.2 mol','1 mol','2 mol'], answer:0, section:'Chemistry', topic:'C1', difficulty:'medium',
      explanation:'n = m/M = 4.4/44 = 0.1 mol.', img:''},
     {id:'q-4', text:'Which functional group is present in ethanol?',
-     opts:['−COOH','−OH','−CHO','−NH₂'], answer:1, section:'Chemistry', topic:'C5',
+     opts:['−COOH','−OH','−CHO','−NH₂'], answer:1, section:'Chemistry', topic:'C3', difficulty:'medium',
      explanation:'Ethanol (C₂H₅OH) contains the hydroxyl (−OH) group, making it an alcohol.', img:''},
     {id:'q-5', text:'Which chamber of the human heart pumps oxygenated blood into the systemic circulation?',
-     opts:['Right atrium','Left ventricle','Right ventricle','Left atrium'], answer:1, section:'Biology', topic:'Z1',
+     opts:['Right atrium','Left ventricle','Right ventricle','Left atrium'], answer:1, section:'Zoology', topic:'Z5', difficulty:'medium',
      explanation:'The left ventricle has the thickest muscular wall and drives blood into the aorta.', img:''},
-    {id:'q-6', text:'Which organelle is known as the powerhouse of the cell?',
-     opts:['Ribosome','Mitochondrion','Golgi apparatus','Lysosome'], answer:1, section:'Biology', topic:'Z2',
-     explanation:'Mitochondria generate ATP through cellular respiration.', img:''},
+    {id:'q-6', text:'Which of the following diseases is caused by Mycobacterium tuberculosis?',
+     opts:['Typhoid','Tuberculosis','Cholera','Malaria'], answer:1, section:'Zoology', topic:'Z6', difficulty:'easy',
+     explanation:'Mycobacterium tuberculosis is the acid-fast bacterium that causes tuberculosis (TB).', img:''},
     {id:'q-7', text:'The primary pigment involved in photosynthesis is:',
-     opts:['Chlorophyll a','Chlorophyll b','Carotene','Xanthophyll'], answer:0, section:'Botany', topic:'B3',
+     opts:['Chlorophyll a','Chlorophyll b','Carotene','Xanthophyll'], answer:0, section:'Botany', topic:'B7', difficulty:'medium',
      explanation:'Chlorophyll a is the main photochemical reaction-centre pigment in all photosynthetic plants.', img:''},
-    {id:'q-8', text:'If sin θ = 3/5 and θ is acute, what is the value of cos θ?',
-     opts:['3/4','4/5','5/4','√3/5'], answer:1, section:'Maths', topic:'M2',
-     explanation:'cos θ = √(1 − sin²θ) = √(1 − 9/25) = 4/5.', img:''}
+    {id:'q-8', text:'A cross between AaBb and aabb plants produces offspring in the phenotypic ratio:',
+     opts:['9 : 3 : 3 : 1','1 : 1 : 1 : 1','3 : 1','1 : 2 : 1'], answer:1, section:'Botany', topic:'B5', difficulty:'hard',
+     explanation:'AaBb × aabb is a dihybrid test cross: each of the four gamete classes (AB, Ab, aB, ab) is equally likely, giving 1:1:1:1.', img:''},
+    {id:'q-9', text:'Rita goes 30 km North, turns right and goes 20 km, then turns right again and goes 30 km. How far and in which direction is she from her starting point?',
+     opts:['20 km west','20 km east','30 km north','50 km south'], answer:1, section:'MAT', topic:'A1', difficulty:'easy',
+     explanation:'The two 30 km legs (north, then south) cancel out; the 20 km leg heading east remains. (Official MECEE-BL sample question.)', img:''},
+    {id:'q-10', text:'The length and breadth of a rectangle are increased by 15% and 25% respectively. What is the percentage increase in its area?',
+     opts:['40%','44%','45%','50%'], answer:1, section:'MAT', topic:'A2', difficulty:'medium',
+     explanation:'New area = 1.15 × 1.25 = 1.4375, i.e. a 43.75% ≈ 44% increase. (Official MECEE-BL sample question.)', img:''}
   ];
 
   /* ----- db persistence ----- */
@@ -1474,6 +1746,15 @@ var MockApi = (function(){
     if(!db.outbox) db.outbox = [];
     if(!db.loginFails) db.loginFails = {};
     if(!db.messages) db.messages = [];
+    if(!db.dailyExams) db.dailyExams = {};
+    if(db.autopilot == null) db.autopilot = false;
+    /* v3: every question gets a difficulty tag; legacy sections are remapped */
+    db.questions.forEach(function(q){
+      if(!q.difficulty) q.difficulty = 'medium';
+      else q.difficulty = normalizeDifficultyClient(q.difficulty);
+      q.section = legacySectionClient(q.section);
+    });
+    db.attempts.forEach(function(a){ if(a.dailyDate == null) a.dailyDate = ''; });
   }
   function save(){ localStorage.setItem(DB_KEY, JSON.stringify(db)); }
 
@@ -1522,7 +1803,7 @@ var MockApi = (function(){
 
   /* ----- demo seed ----- */
   function seed(){
-    var d = {v:1, users:[], attempts:[], responses:[], questions:[], examMeta:{}, outbox:[], loginFails:{}, messages:[]};
+    var d = {v:3, users:[], attempts:[], responses:[], questions:[], examMeta:{}, outbox:[], loginFails:{}, messages:[], dailyExams:{}, autopilot:false};
     db = d;
     d.users.push(mkUser('Demo Teacher','teacher@cee.edu','teacher','demo1234','teacher','approved',90));
     d.users.push(mkUser('Demo Student','student@cee.edu','student','demo1234','student','approved',60));
@@ -1537,8 +1818,39 @@ var MockApi = (function(){
     synthAttempt(aa, 5, 44, 8, 0.80, null, false);
     synthAttempt(aa, 2, 55, 8, 0.65, null, false);
     synthAttempt(sa, 4, 66, 8, 0.45, null, false);
+    /* today's model exam: fixed paper from the date seed + one demo attempt by Aayush */
+    var dToday = dailyDateStrClient(0);
+    var dailySet = buildDailySetClient(dToday, MODEL_DEFAULT_COUNT, d.questions);
+    if(dailySet.length){
+      d.dailyExams[dToday] = {qids:dailySet.map(function(q){ return q.id; }), count:dailySet.length,
+        durMin:ceeDurationForClient(dailySet.length), status:'live', by:'seed', at:nowISO()};
+      var drnd = mulberry32Client(20260924), dcorrect = 0, dwrong = 0, dskipped = 0, dscore = 0, dresps = [];
+      dailySet.forEach(function(q, i){
+        var r = drnd(), chosen;
+        if(r < 0.75) chosen = q.answer;
+        else if(r < 0.85) chosen = -1;
+        else { do{ chosen = Math.floor(drnd()*4); } while(chosen === q.answer); }
+        var isC = chosen === q.answer, isS = chosen === -1;
+        if(isS){ dskipped++; }
+        else if(isC){ dcorrect++; dscore += 1; }
+        else { dwrong++; dscore -= 0.25; }
+        dresps.push({id:'a-seed-77-r'+i, attemptId:'a-seed-77', userId:aa.id, qId:q.id,
+          qText:q.text, chosen:chosen, isCorrect:isC && !isS, section:q.section, topic:q.topic});
+      });
+      dscore = Math.round(dscore*100)/100;
+      var dsec = {};
+      dailySet.forEach(function(q){ dsec[q.section] = (dsec[q.section]||0)+1; });
+      d.attempts.push({id:'a-seed-77', attemptIndex:'seed-77', userId:aa.id,
+        startedAt:new Date(Date.now() - 2*3600000).toISOString(), submittedAt:new Date(Date.now() - 3600000).toISOString(),
+        durMin:d.dailyExams[dToday].durMin, deadline:'', section:'MODEL|' + Object.keys(dsec).map(function(x){ return x+':'+dsec[x]; }).join('|'),
+        mode:'model', dailyDate:dToday, negMarking:true, score:dscore, total:dailySet.length,
+        correct:dcorrect, wrong:dwrong, skipped:dskipped,
+        accuracy:dailySet.length ? Math.round(dcorrect/dailySet.length*1000)/10 : 0,
+        autoSubmitted:false, late:false});
+      d.responses.push.apply(d.responses, dresps);
+    }
     d.messages.push({id:'m-seed-1', from:aa.id, name:aa.name,
-      message:'Sir, could you share extra practice questions on Human Physiology (Z1)? I keep losing marks there.',
+      message:'Sir, could you share extra practice questions on Human Biology & Physiology (Z5)? I keep losing marks there.',
       at:new Date(Date.now() - 1*86400000).toISOString(), read:false});
     d.messages.push({id:'m-seed-2', from:sa.id, name:sa.name,
       message:'Thank you for the feedback on my last mock — the explanations really helped!',
@@ -1584,9 +1896,16 @@ var MockApi = (function(){
   }
   function resolveQuestions(data, opts, userId, startedAt){
     /* rebuild the deterministic set, then fall back to text matching (bank drift) */
-    var sig = examOptsSignatureClient(opts);
-    var seedKey = strSeedClient(userId + '|' + startedAt + '|' + sig);
-    var rebuilt = buildExamSetClient(db.questions, opts, seedKey);
+    var rebuilt;
+    if(opts.mode === 'model'){
+      var byId_ = {};
+      db.questions.forEach(function(q){ byId_[q.id] = q; });
+      rebuilt = (opts.qids || []).map(function(id){ return byId_[id]; }).filter(Boolean);
+    } else {
+      var sig = examOptsSignatureClient(opts);
+      var seedKey = strSeedClient(userId + '|' + startedAt + '|' + sig);
+      rebuilt = buildExamSetClient(db.questions, opts, seedKey);
+    }
     var byText = {};
     rebuilt.forEach(function(q){ byText[normClient(q.text)] = q; });
     return (data.qs || []).map(function(snap){
@@ -1600,16 +1919,49 @@ var MockApi = (function(){
       return {q:q, chosen:(data.answers && data.answers[snap.id] != null) ? data.answers[snap.id] : -1};
     });
   }
-  function buildSection(items, isPractice){
+  function buildSection(items, mode){
     var counts = {};
     items.forEach(function(it){ if(it.q) counts[it.q.section] = (counts[it.q.section]||0)+1; });
     var sec = Object.keys(counts).map(function(s){ return s+':'+counts[s]; }).join('|');
-    return (isPractice ? 'PRACTICE|' : '') + sec;
+    if(mode === 'practice') return 'PRACTICE|' + sec;
+    if(mode === 'model') return 'MODEL|' + sec;
+    return sec;
+  }
+
+  /* ----- model exam of the day (mirrors the GAS daily engine) ----- */
+  function dailyBoardForDate(dateStr){
+    return db.attempts.filter(function(a){ return a.mode === 'model' && a.dailyDate === dateStr; })
+      .sort(function(a, b){
+        var d = b.score - a.score;
+        if(d) return d;
+        d = b.accuracy - a.accuracy;
+        if(d) return d;
+        return new Date(a.submittedAt) - new Date(b.submittedAt);
+      });
+  }
+  function ensureDailyPaper(dateStr, count, by){
+    var paper = db.dailyExams[dateStr];
+    if(!paper){
+      var set = buildDailySetClient(dateStr, count || MODEL_DEFAULT_COUNT, db.questions);
+      if(!set.length) throw err('The question bank is empty. Add questions first.', 'EMPTY_BANK');
+      paper = db.dailyExams[dateStr] = {qids:set.map(function(q){ return q.id; }), count:set.length,
+        durMin:ceeDurationForClient(set.length), status:'live', by:by || 'auto', at:nowISO()};
+      save();
+    }
+    return paper;
+  }
+  function liveDailyQuestionIdsClient(){
+    var ids = {};
+    [0, 1].forEach(function(off){
+      var p = db.dailyExams[dailyDateStrClient(off)];
+      if(p && p.status === 'live') p.qids.forEach(function(id){ ids[id] = true; });
+    });
+    return ids;
   }
 
   var api = {
     /* ---------------- auth ---------------- */
-    register: function(name, email, username, password){
+    registerUser: function(name, email, username, password){
       name = String(name||'').trim(); email = String(email||'').toLowerCase().trim();
       username = String(username||'').toLowerCase().trim();
       if(name.length < 2) throw err('Please enter your full name.');
@@ -1627,7 +1979,7 @@ var MockApi = (function(){
       save();
       return {ok:true, message:'Registration submitted. You can sign in once a teacher approves your account.'};
     },
-    login: function(email, password, deviceId){
+    loginUser: function(email, password, deviceId){
       email = String(email||'').toLowerCase().trim();
       var lf = db.loginFails[email];
       if(lf && lf.until && new Date(lf.until) > new Date()){
@@ -1638,7 +1990,7 @@ var MockApi = (function(){
       if(!u || u.passHash !== sha256(String(password||''))){
         lf = lf || {n:0, until:''};
         lf.n = (lf.n||0) + 1;
-        if(lf.n >= 5){ lf.until = new Date(Date.now()+120000).toISOString(); lf.n = 0; }
+        if(lf.n >= LOGIN_MAX_FAILS){ lf.until = new Date(Date.now()+LOGIN_LOCK_SECONDS*1000).toISOString(); lf.n = 0; }
         db.loginFails[email] = lf; save();
         throw err(lf.until ? 'Too many failed attempts. Locked for 2 minutes.' : 'Incorrect email or password.', lf.until ? 'TOO_MANY_ATTEMPTS' : 'BAD_LOGIN');
       }
@@ -1648,11 +2000,11 @@ var MockApi = (function(){
       if(u.deviceId && u.deviceId !== deviceId) throw err('This account is bound to another device. Ask a teacher to reset your device.', 'DEVICE_LOCKED');
       u.deviceId = deviceId;
       u.sessionToken = uid();
-      u.sessionExpires = new Date(Date.now() + 86400000).toISOString();
+      u.sessionExpires = new Date(Date.now() + SESSION_HOURS*3600000).toISOString();
       save();
       return {user:pubUser(u), token:u.sessionToken};
     },
-    logout: function(userId, token){
+    logoutUser: function(userId, token){
       var u = activeSession(userId, token);
       if(u){ u.sessionToken = ''; u.sessionExpires = ''; save(); }
       return {ok:true};
@@ -1735,10 +2087,13 @@ var MockApi = (function(){
         return {duplicate:true, id:existing.id, score:existing.score, total:existing.total,
                 correct:existing.correct, wrong:existing.wrong, skipped:existing.skipped,
                 accuracy:existing.accuracy, section:existing.section, mode:existing.mode,
+                dailyDate:String(existing.dailyDate || ''),
                 negMarking:existing.negMarking, autoSubmitted:existing.autoSubmitted, late:existing.late};
       }
       if(meta && attemptIndex === meta.attemptIndex){
         opts = meta.opts; /* authoritative — client options are never trusted */
+      } else if(String((data || {}).mode || '') === 'model'){
+        throw err('Your model-exam session was not found on the server. Please start today\'s model exam again.', 'MODEL_NO_META');
       } else {
         opts = normalizeExamOptionsClient(null); /* fall back to standard mock rules */
       }
@@ -1757,13 +2112,14 @@ var MockApi = (function(){
       var submittedAt = nowISO();
       var late = false;
       if(opts.timed && meta && attemptIndex === meta.attemptIndex && meta.dur > 0){
-        late = (new Date(submittedAt) - new Date(meta.start)) > (meta.dur*60 + 120)*1000;
+        late = (new Date(submittedAt) - new Date(meta.start)) > (meta.dur*60 + EXAM_GRACE_MS/1000)*1000;
       }
       var attemptId = 'a-' + uid();
       var attempt = {id:attemptId, attemptIndex:attemptIndex, userId:userId, startedAt:startedAt,
         submittedAt:submittedAt, durMin:(meta && attemptIndex===meta.attemptIndex)?meta.dur:(data?data.dur:0),
         deadline:(meta && attemptIndex===meta.attemptIndex && opts.timed) ? new Date(new Date(meta.start).getTime()+meta.dur*60000).toISOString() : '',
-        section:buildSection(items, opts.mode==='practice'), mode:opts.mode, negMarking:neg,
+        section:buildSection(items, opts.mode), mode:opts.mode,
+        dailyDate:opts.mode === 'model' ? String(opts.dailyDate || '') : '', negMarking:neg,
         score:score, total:total, correct:correct, wrong:wrong, skipped:skipped,
         accuracy: total ? Math.round(correct/total*1000)/10 : 0,
         autoSubmitted:!!(data && data.autoSubmitted), late:late};
@@ -1785,6 +2141,7 @@ var MockApi = (function(){
       save();
       return {id:attemptId, score:score, total:total, correct:correct, wrong:wrong, skipped:skipped,
               accuracy:attempt.accuracy, section:attempt.section, mode:opts.mode,
+              dailyDate:opts.mode === 'model' ? String(opts.dailyDate || '') : '',
               negMarking:neg, autoSubmitted:attempt.autoSubmitted, late:late, duplicate:false};
     },
     getAttemptReview: function(userId, token, attemptId){
@@ -1996,7 +2353,7 @@ var MockApi = (function(){
     },
 
     /* ---------------- in-app messaging (student → teacher) ---------------- */
-    sendMessageToTeacher: function(userId, token, message){
+    sendStudentMessage: function(userId, token, message){
       var u = requireSession(userId, token);
       if(u.role !== 'student') throw err('Only students can send messages here.');
       message = String(message||'').trim();
@@ -2031,9 +2388,10 @@ var MockApi = (function(){
     /* ---------------- question bank ---------------- */
     getAllQuestions: function(userId, token){
       requireSession(userId, token, 'teacher');
-      return db.questions.slice(0, 1000).map(function(q){
+      return db.questions.slice(0, MAX_QUESTIONS_RETURNED).map(function(q){
         return {id:q.id, text:q.text, opts:q.opts, answer:q.answer, section:q.section,
-                topic:q.topic, explanation:q.explanation||'', img:q.img||''};
+                topic:q.topic, explanation:q.explanation||'', img:q.img||'',
+                difficulty:normalizeDifficultyClient(q.difficulty)};
       });
     },
     addQuestion: function(userId, token, q){
@@ -2044,8 +2402,9 @@ var MockApi = (function(){
       if(db.questions.some(function(x){ return normClient(x.text) === t; }))
         throw err('A question with this text already exists in the bank.', 'DUPLICATE_QUESTION');
       var nq = {id:'q-'+uid(), text:String(q.text).trim(), opts:q.opts.map(function(o){ return String(o).trim(); }),
-        answer:Math.max(0, Math.min(3, parseInt(q.answer,10)||0)), section:q.section, topic:q.topic||'',
-        explanation:String(q.explanation||'').trim(), img:String(q.img||'')};
+        answer:Math.max(0, Math.min(3, parseInt(q.answer,10)||0)), section:legacySectionClient(q.section), topic:q.topic||'',
+        explanation:String(q.explanation||'').trim(), img:String(q.img||''),
+        difficulty:normalizeDifficultyClient(q.difficulty)};
       if(SECTIONS.indexOf(nq.section) < 0) throw err('Pick a valid subject.');
       if(nq.img && nq.img.length > 48000) throw err('Image is too large (max ~48KB after downscaling).');
       db.questions.push(nq); save();
@@ -2055,6 +2414,8 @@ var MockApi = (function(){
       requireSession(userId, token, 'teacher');
       var q = db.questions.filter(function(x){ return x.id === id; })[0];
       if(!q) throw err('Question not found.');
+      if(liveDailyQuestionIdsClient()[id])
+        throw err('This question is part of a live model exam and is locked until the exam day is over.', 'MODEL_QUESTION_LOCKED');
       if(patch.text != null){
         var t = normClient(patch.text);
         var clash = db.questions.filter(function(x){ return x.id !== id && normClient(x.text) === t; })[0];
@@ -2063,16 +2424,19 @@ var MockApi = (function(){
       }
       if(patch.opts) q.opts = patch.opts.map(function(o){ return String(o).trim(); });
       if(patch.answer != null) q.answer = Math.max(0, Math.min(3, parseInt(patch.answer,10)||0));
-      if(patch.section != null) q.section = patch.section;
       if(patch.topic != null) q.topic = patch.topic;
       if(patch.explanation != null) q.explanation = String(patch.explanation).trim();
       if(patch.img != null) q.img = String(patch.img);
+      if(patch.difficulty != null) q.difficulty = normalizeDifficultyClient(patch.difficulty);
+      if(patch.section != null) q.section = legacySectionClient(patch.section);
       if(q.img && q.img.length > 48000) throw err('Image is too large (max ~48KB after downscaling).');
       save();
       return {ok:true, message:'Question updated.'};
     },
     deleteQuestion: function(userId, token, id){
       requireSession(userId, token, 'teacher');
+      if(liveDailyQuestionIdsClient()[id])
+        throw err('This question is part of a live model exam and is locked until the exam day is over.', 'MODEL_QUESTION_LOCKED');
       var i = db.questions.findIndex(function(x){ return x.id === id; });
       if(i < 0) throw err('Question not found.');
       db.questions.splice(i,1); save();
@@ -2088,29 +2452,31 @@ var MockApi = (function(){
       var seen = {};
       rows.forEach(function(r, idx){
         var line = 'Row ' + (idx+1);
-        var pv = {row:idx+1, text:'', answer:'', section:'', topic:'', status:'insert', reason:''};
+        var pv = {row:idx+1, text:'', answer:'', section:'', topic:'', difficulty:'', status:'insert', reason:''};
         var fail = function(msg){ pv.status = 'skip'; pv.reason = msg; errors.push(line + ': ' + msg); skipped++; preview.push(pv); };
         if(!r.QUESTION || !r.A || !r.B || !r.C || !r.D || r.ANSWER == null || !r.SECTION){ fail('missing required fields'); return; }
         pv.text = String(r.QUESTION).trim();
         pv.answer = String(r.ANSWER).trim().toUpperCase();
         pv.section = String(r.SECTION).trim();
         pv.topic = String(r.TOPIC||'').toUpperCase().trim();
+        pv.difficulty = normalizeDifficultyClient(r.DIFFICULTY);
         var key = normClient(r.QUESTION);
         if(db.questions.some(function(x){ return normClient(x.text) === key; })){
           fail('duplicate question (already in the bank)'); return;
         }
         if(seen[key]){ fail('duplicate question (repeated in this batch)'); return; }
         seen[key] = true;
-        var sec = String(r.SECTION).trim();
+        var sec = legacySectionClient(String(r.SECTION).trim());
         if(SECTIONS.indexOf(sec) < 0){ fail('unknown subject "' + r.SECTION + '"'); return; }
         var ans = String(r.ANSWER).trim().toUpperCase();
         var ansIdx = 'ABCD'.indexOf(ans) >= 0 ? 'ABCD'.indexOf(ans) : (parseInt(ans,10)-1);
         if(!(ansIdx >= 0 && ansIdx <= 3)){ fail('answer must be A–D'); return; }
         if(r.IMAGE && String(r.IMAGE).length > 48000){ fail('image too large'); return; }
+        var diff = normalizeDifficultyClient(r.DIFFICULTY);
         if(!dry){
           db.questions.push({id:'q-'+uid(), text:String(r.QUESTION).trim(), opts:[String(r.A).trim(),String(r.B).trim(),String(r.C).trim(),String(r.D).trim()],
             answer:ansIdx, section:sec, topic:String(r.TOPIC||'').toUpperCase().trim(),
-            explanation:String(r.EXPLANATION||'').trim(), img:String(r.IMAGE||'')});
+            explanation:String(r.EXPLANATION||'').trim(), img:String(r.IMAGE||''), difficulty:diff});
         }
         inserted++;
         preview.push(pv);
@@ -2124,6 +2490,95 @@ var MockApi = (function(){
       return {ok:true, inserted:inserted, skipped:skipped, errors:errors,
               message:'Uploaded ' + inserted + ' question' + (inserted===1?'':'s') +
                       (skipped ? ', skipped ' + skipped : '') + '.'};
+    },
+
+    /* ---------------- model exam of the day ---------------- */
+    generateDailyExam: function(userId, token, opts){
+      requireSession(userId, token, 'teacher');
+      opts = opts || {};
+      var count = Math.max(5, Math.min(50, parseInt(opts.count,10) || MODEL_DEFAULT_COUNT));
+      var dateStr = dailyDateStrClient(0);
+      if(db.attempts.some(function(a){ return a.mode === 'model' && a.dailyDate === dateStr; }))
+        throw err('Students have already attempted the ' + dateStr + ' model exam — it cannot be regenerated.', 'MODEL_ATTEMPTED');
+      var set = buildDailySetClient(dateStr, count, db.questions);
+      if(!set.length) throw err('The question bank is empty. Add questions first.', 'EMPTY_BANK');
+      db.dailyExams[dateStr] = {qids:set.map(function(q){ return q.id; }), count:set.length,
+        durMin:ceeDurationForClient(set.length), status:'live', by:'teacher', at:nowISO()};
+      save();
+      return {ok:true, date:dateStr, count:set.length, durMin:db.dailyExams[dateStr].durMin};
+    },
+    getDailyExamStatus: function(userId, token){
+      var u = requireSession(userId, token);
+      var dateStr = dailyDateStrClient(0);
+      var paper;
+      try{ paper = ensureDailyPaper(dateStr, MODEL_DEFAULT_COUNT, 'auto'); }
+      catch(e){ return {date:dateStr, exists:false, attempted:false, participants:0}; }
+      var mine = db.attempts.filter(function(a){
+        return a.mode === 'model' && a.dailyDate === dateStr && a.userId === u.id;
+      })[0] || null;
+      var board = dailyBoardForDate(dateStr);
+      var rank = null;
+      if(mine) board.forEach(function(a, i){ if(a.userId === u.id) rank = i + 1; });
+      return {date:dateStr, exists:paper.status === 'live', count:paper.count, durMin:paper.durMin,
+              attempted:!!mine, myScore:mine ? mine.score : null, myTotal:mine ? mine.total : null,
+              myAccuracy:mine ? mine.accuracy : null, myRank:rank, participants:board.length};
+    },
+    startDailyExam: function(userId, token){
+      var u = requireSession(userId, token);
+      var dateStr = dailyDateStrClient(0);
+      var paper = ensureDailyPaper(dateStr, MODEL_DEFAULT_COUNT, 'auto');
+      if(db.attempts.some(function(a){ return a.mode === 'model' && a.dailyDate === dateStr && a.userId === u.id; }))
+        throw err('You have already taken today\'s model exam — one attempt per day. See the daily leaderboard for your result.', 'MODEL_ALREADY_DONE');
+      var byId = {};
+      db.questions.forEach(function(q){ byId[q.id] = q; });
+      var set = paper.qids.map(function(id){ return byId[id]; }).filter(Boolean);
+      if(!set.length) throw err('Today\'s model exam could not be loaded. Ask your teacher to regenerate it.', 'MODEL_BROKEN');
+      var attemptIndex = db.attempts.filter(function(a){ return a.userId === u.id; }).length + 1;
+      var startedAt = nowISO();
+      var durMin = paper.durMin || ceeDurationForClient(set.length);
+      var opts = {mode:'model', dailyDate:dateStr, qids:paper.qids.slice(), subjects:[], topics:[], count:set.length,
+                  timed:true, durationMinutes:durMin, negMarking:true, ifb:false};
+      db.examMeta[u.id] = {start:startedAt, dur:durMin, opts:opts, sig:'model|' + dateStr, attemptIndex:attemptIndex};
+      save();
+      var qs = set.map(function(q){
+        return {id:q.id, text:q.text, opts:q.opts, section:q.section, topic:q.topic, img:q.img || ''};
+      });
+      return {attemptIndex:attemptIndex, startedAt:startedAt, durMin:durMin,
+              deadline:new Date(Date.now() + durMin*60000).toISOString(),
+              opts:opts, questions:qs};
+    },
+    getDailyLeaderboard: function(userId, token){
+      var u = requireSession(userId, token);
+      var dateStr = dailyDateStrClient(0);
+      var names = {};
+      db.users.forEach(function(x){ names[x.id] = x.name; });
+      var board = dailyBoardForDate(dateStr).map(function(a, i){
+        return {rank:i+1, name:names[a.userId] || 'Student', score:a.score, total:a.total, accuracy:a.accuracy};
+      });
+      var myRank = null;
+      board.forEach(function(r){ if(r.name === (names[u.id] || '')) myRank = myRank || r.rank; });
+      var history = [];
+      for(var d = 1; d < MODEL_HISTORY_DAYS; d++){
+        var ds = dailyDateStrClient(-d);
+        var b = dailyBoardForDate(ds);
+        var mine = b.filter(function(a){ return a.userId === u.id; })[0] || null;
+        if(mine || b.length){
+          var rank = null;
+          b.forEach(function(a, i){ if(a.userId === u.id) rank = i + 1; });
+          history.push({date:ds, myScore:mine ? mine.score : null, myTotal:mine ? mine.total : null,
+                        myAccuracy:mine ? mine.accuracy : null, myRank:rank, participants:b.length});
+        }
+      }
+      return {date:dateStr, rows:board.slice(0, 20), myRank:myRank, participants:board.length,
+              history:history, autopilot:!!db.autopilot};
+    },
+    setDailyAutopilot: function(userId, token, on){
+      requireSession(userId, token, 'teacher');
+      db.autopilot = !!on;
+      save();
+      return {ok:true, autopilot:!!on,
+              message:on ? ('Autopilot on — the model exam is prepared daily at ' + MODEL_AUTO_HOUR + ':00 (in the GAS backend this uses a time-driven trigger; the sandbox generates it on demand).')
+                         : 'Autopilot off.'};
     }
   };
   db = null; /* loaded lazily on first api access below */
@@ -2226,7 +2681,7 @@ function afterLogin(){
 }
 function doLogout(){
   var fin = function(){
-    callServer('logout', P.user.id, P.token).catch(function(){});
+    callServer('logoutUser', P.user.id, P.token).catch(function(){});
     try{ localStorage.removeItem(SES_KEY); }catch(e){}
     stopTimer(); clearStoredExam(); P.exam = null;
     P.user = null; P.token = null;
@@ -2286,7 +2741,7 @@ function doLogin(){
   var email = $('liEmail').value.trim(), pass = $('liPass').value;
   if(!email || !pass){ showErr('loginErr', 'Enter your email and password.'); return; }
   var btn = $('btnLogin'); btn.disabled = true; btn.innerHTML = '<span class="spin"></span> Signing in…';
-  callServer('login', email, pass, P.deviceId).then(function(r){
+  callServer('loginUser', email, pass, P.deviceId).then(function(r){
     P.user = r.user; P.token = r.token;
     try{ localStorage.setItem(SES_KEY, JSON.stringify({userId:r.user.id, token:r.token})); }catch(e){}
     if($('liRemember').checked){ try{ localStorage.setItem('cee_remember_email', email); }catch(e){} }
@@ -2303,7 +2758,7 @@ function doLogin(){
 function doRegister(){
   clearErr('rgErr');
   var btn = $('btnRegister'); btn.disabled = true; btn.innerHTML = '<span class="spin"></span> Registering…';
-  callServer('register', $('rgName').value, $('rgEmail').value, $('rgUser').value, $('rgPass').value)
+  callServer('registerUser', $('rgName').value, $('rgEmail').value, $('rgUser').value, $('rgPass').value)
     .then(function(r){
       btn.disabled = false; btn.textContent = 'Register';
       toast(r.message, 'ok');
@@ -2471,17 +2926,21 @@ function loadStudentDash(){
     P.leaderboard = lb;
     renderLeaderboard(lb);
   }).catch(function(e){ toast(e.message, 'bad'); });
+  refreshDailyCard();
 }
 function renderAttempts(){
   var s = P.stats; if(!s) return;
   var all = s.attempts || [];
-  var mocks = all.filter(function(a){ return a.type !== 'practice'; });
+  var mocks = all.filter(function(a){ return a.type === 'mock'; });
   var prac = all.filter(function(a){ return a.type === 'practice'; });
+  var mods = all.filter(function(a){ return a.type === 'model'; });
   $('cntAttAll').textContent = all.length;
   $('cntAttMock').textContent = mocks.length;
   $('cntAttPrac').textContent = prac.length;
+  $('cntAttModel').textContent = mods.length;
   $('attChips').style.display = all.length >= 2 ? 'flex' : 'none';
-  var list = P.attemptFilter === 'mock' ? mocks : P.attemptFilter === 'practice' ? prac : all;
+  var list = P.attemptFilter === 'mock' ? mocks : P.attemptFilter === 'practice' ? prac :
+             P.attemptFilter === 'model' ? mods : all;
   var tb = $('attemptsBody');
   if(!list.length){
     clearRows('attemptsBody', P.attemptFilter === 'all' ? 'No attempts yet — start your first mock above.' :
@@ -2489,10 +2948,10 @@ function renderAttempts(){
     return;
   }
   tb.innerHTML = list.map(function(a, i){
-    var isP = a.type === 'practice';
+    var isP = a.type === 'practice', isM = a.type === 'model';
     return '<tr class="rowin" style="animation-delay:' + (i*0.03) + 's">' +
       '<td class="num">' + esc(fmtDate(a.at)) + '</td>' +
-      '<td><span class="pill ' + (isP ? 'teal' : 'acc') + '">' + (isP ? 'PRACTICE' : 'MOCK') + '</span></td>' +
+      '<td><span class="pill ' + (isP ? 'teal' : isM ? 'model' : 'acc') + '">' + (isP ? 'PRACTICE' : isM ? 'MODEL' : 'MOCK') + '</span></td>' +
       '<td class="small">' + esc(subjectLineClient(a.section)) + '</td>' +
       '<td><b class="score-pill ' + scoreClass(a.score, a.total) + ' num">' + a.score + '/' + a.total + '</b></td>' +
       '<td class="num">' + a.accuracy + '%</td>' +
@@ -2517,7 +2976,145 @@ function setAttemptFilter(f){
   $('chipAttAll').classList.toggle('on', f === 'all');
   $('chipAttMock').classList.toggle('on', f === 'mock');
   $('chipAttPrac').classList.toggle('on', f === 'practice');
+  $('chipAttModel').classList.toggle('on', f === 'model');
   renderAttempts();
+}
+
+/* ---------- model exam of the day ---------- */
+function refreshDailyCard(){
+  if(!P.user || P.user.role !== 'student') return;
+  callServer('getDailyExamStatus', P.user.id, P.token).then(function(d){
+    renderDailyCard(d);
+  }).catch(function(){ /* silent — the card simply stays hidden */ });
+}
+function renderDailyCard(d){
+  var card = $('dailyCard');
+  if(!d || !d.exists){ card.style.display = 'none'; return; }
+  card.style.display = '';
+  $('dcDate').textContent = fmtDate(d.date) + ' · ' + d.date;
+  $('dcMeta').textContent = d.count + ' questions · ' + d.durMin + ' min · +1 / −0.25 · same paper for the whole class, one attempt';
+  var startBtn = $('btnDailyStart'), status = $('dcStatus');
+  if(d.attempted){
+    startBtn.style.display = 'none';
+    status.className = 'dc-status done';
+    status.innerHTML = '✔ Done — <b>' + d.myScore + '/' + d.myTotal + '</b> (' + d.myAccuracy + '%)' +
+      (d.myRank ? ' · rank <b>#' + d.myRank + '</b> of ' + d.participants : '');
+  } else {
+    startBtn.style.display = '';
+    status.className = 'dc-status';
+    status.textContent = d.participants ? (d.participants + ' classmate' + (d.participants===1?'':'s') + ' already took it') : 'Be the first to take it today';
+  }
+}
+function startDailySession(){
+  var btn = $('btnDailyStart');
+  btn.disabled = true; btn.innerHTML = '<span class="spin"></span> Preparing…';
+  overlay(true, 'Preparing today\'s model exam…');
+  callServer('startDailyExam', P.user.id, P.token).then(function(r){
+    overlay(false);
+    btn.disabled = false; btn.textContent = '✔ Start model exam';
+    P.exam = {
+      attemptIndex: r.attemptIndex, startedAt: r.startedAt, deadline: r.deadline,
+      durMin: r.durMin, opts: r.opts, qs: r.questions, answers: {}, marks: {}, cur: 0
+    };
+    P.persistWarned = false;
+    P.warned = {};
+    persistExam();
+    enterExam();
+  }).catch(function(e){
+    overlay(false);
+    btn.disabled = false; btn.textContent = '✔ Start model exam';
+    toast(e.message, 'bad');
+    refreshDailyCard();
+  });
+}
+function openDailyBoard(){
+  callServer('getDailyLeaderboard', P.user.id, P.token).then(function(b){
+    renderDailyBoard(b);
+    openModal('modalDailyBoard');
+  }).catch(function(e){ toast(e.message, 'bad'); });
+}
+function renderDailyBoard(b){
+  $('dbTitle').textContent = 'Daily leaderboard — ' + b.date;
+  var mr = $('dbMyRank');
+  if(b.myRank){
+    mr.style.display = 'flex';
+    mr.innerHTML = '<span>My rank today: <b>#' + b.myRank + '</b> of ' + b.participants + '</span>' +
+      (b.autopilot ? '<span class="dim">· autopilot on</span>' : '');
+  } else {
+    mr.style.display = 'none';
+  }
+  var tb = $('dbBody');
+  tb.innerHTML = b.rows.length ? b.rows.map(function(r){
+    return '<tr><td class="num"><b>' + r.rank + '</b></td><td>' + esc(r.name) + '</td>' +
+      '<td><b class="score-pill num">' + r.score + '/' + r.total + '</b></td><td class="num">' + r.accuracy + '%</td></tr>';
+  }).join('') : '<tr><td colspan="4" class="dim" style="text-align:center;padding:18px">No one has taken today\'s model exam yet — be the first!</td></tr>';
+  var hb = $('dbHist');
+  hb.innerHTML = b.history.length ? b.history.map(function(h){
+    return '<tr><td>' + esc(fmtDate(h.date)) + '</td>' +
+      '<td class="num">' + (h.myScore != null ? h.myScore + '/' + h.myTotal : '—') + '</td>' +
+      '<td class="num">' + (h.myAccuracy != null ? h.myAccuracy + '%' : '—') + '</td>' +
+      '<td class="num">' + (h.myRank ? '#' + h.myRank : '—') + '</td>' +
+      '<td class="num dim">' + h.participants + '</td></tr>';
+  }).join('') : '<tr><td colspan="5" class="dim" style="text-align:center;padding:14px">No daily-exam history yet.</td></tr>';
+}
+
+/* ---------- official syllabus browser ---------- */
+function openSyllabus(){
+  var y = SYLLABUS;
+  var html = '<div class="small dim" style="margin:2px 0 4px">' + esc(y.authority) + '<br>' + esc(y.history) + '</div>' +
+    '<div class="syl-fmt">' + y.format.map(function(f){
+      return '<div><b>' + esc(f.k) + '</b>' + esc(f.l) + '</div>';
+    }).join('') + '</div>';
+  y.groups.forEach(function(g, i){
+    html += '<div class="syl-group">' + esc(g.name) + '</div>' +
+      '<div class="small" style="color:var(--mut)">' + esc(g.weights) + '</div>' +
+      (i === 0 ? '<div class="small dim" style="margin-top:3px">The PCB unit contents below apply to every group. This portal builds Group I papers.</div>' : '');
+  });
+  html += '<div style="margin-top:18px"></div>';
+  y.subjects.forEach(function(sub){
+    html += '<div class="syl-subj">' + esc(sub.name) + ' <span class="n">(' + sub.n + ' questions)</span></div>';
+    sub.units.forEach(function(u){
+      html += '<details class="syl-unit"><summary><span class="n">' + u[0] + ' · ' + u[1] + ' Qs</span> ' + esc(u[2]) + '</summary><p>' + esc(u[3]) + '</p></details>';
+    });
+  });
+  html += '<div class="syl-subj" style="margin-top:18px">Official sample questions</div>';
+  y.samples.forEach(function(q){
+    html += '<div class="syl-sample"><b>' + esc(q[0]) + '</b>' + esc(q[1]) + '<br><span class="dim">Answer: ' + esc(q[2]) + '</span></div>';
+  });
+  $('sylBody').innerHTML = html;
+  openModal('modalSyllabus');
+}
+
+/* ---------- teacher: daily exam admin ---------- */
+function loadDailyAdmin(){
+  if(!P.user || P.user.role !== 'teacher') return;
+  callServer('getDailyLeaderboard', P.user.id, P.token).then(function(b){
+    var t = b.rows.length ? b.rows[0].score + '/' + b.rows[0].total : '—';
+    $('daState').textContent = b.participants + ' took it today · top score ' + t + (b.autopilot ? ' · autopilot on' : '');
+    $('swAutopilot').checked = !!b.autopilot;
+  }).catch(function(){});
+}
+function generateDailyClick(){
+  var btn = $('btnDailyGen');
+  btn.disabled = true; btn.innerHTML = '<span class="spin"></span> Generating…';
+  callServer('generateDailyExam', P.user.id, P.token, {}).then(function(r){
+    btn.disabled = false; btn.innerHTML = '&#9851; Generate today\'s paper';
+    toast('Model exam for ' + r.date + ' ready — ' + r.count + ' questions, ' + r.durMin + ' min.', 'ok');
+    loadDailyAdmin();
+  }).catch(function(e){
+    btn.disabled = false; btn.innerHTML = '&#9851; Generate today\'s paper';
+    toast(e.message, 'bad');
+  });
+}
+function autopilotToggle(){
+  var on = $('swAutopilot').checked;
+  callServer('setDailyAutopilot', P.user.id, P.token, on).then(function(r){
+    toast(r.message, 'ok');
+    loadDailyAdmin();
+  }).catch(function(e){
+    toast(e.message, 'bad');
+    $('swAutopilot').checked = !on;
+  });
 }
 
 /* ---------- practice modal ---------- */
@@ -2554,7 +3151,7 @@ function openPracticeModal(pre){
   } else {
     $('prFocusBox').classList.remove('on');
     P.drill = null;
-    if(!pre.keepCount) $('prCount').value = '8';
+    if(!pre.keepCount) $('prCount').value = String(QUESTIONS_PER_EXAM);
   }
   syncPrState();
   openModal('modalPractice');
@@ -2721,9 +3318,9 @@ function enterExam(){
   route('exam');
   var o = P.exam.opts || {};
   var chip = $('exModeChip');
-  var isP = o.mode === 'practice';
-  chip.textContent = isP ? 'PRACTICE' : 'MOCK';
-  chip.className = 'pill ' + (isP ? 'teal' : 'acc');
+  var isP = o.mode === 'practice', isM = o.mode === 'model';
+  chip.textContent = isP ? 'PRACTICE' : isM ? 'MODEL EXAM' : 'MOCK';
+  chip.className = 'pill ' + (isP ? 'teal' : isM ? 'model' : 'acc');
   buildPalette();
   renderQuestion();
   startTimer();
@@ -2890,6 +3487,7 @@ function finalizeExam(auto){
     attemptIndex: P.exam.attemptIndex,
     startedAt: P.exam.startedAt,
     dur: P.exam.durMin,
+    mode: P.exam.opts ? P.exam.opts.mode : 'mock',
     autoSubmitted: !!auto,
     answers: P.exam.answers,
     /* images are deliberately left out: the server re-resolves each question from
@@ -2918,10 +3516,10 @@ function finalizeExam(auto){
 function renderResult(res){
   route('result');
   P.lastResult = res;
-  var isP = res.mode === 'practice';
+  var isP = res.mode === 'practice', isM = res.mode === 'model';
   var chip = $('resMode');
-  chip.textContent = isP ? 'PRACTICE' : 'MOCK' + (res.autoSubmitted ? ' · auto-submitted' : '');
-  chip.className = 'pill ' + (isP ? 'teal' : 'acc');
+  chip.textContent = (isP ? 'PRACTICE' : isM ? 'MODEL EXAM' : 'MOCK') + (res.autoSubmitted ? ' · auto-submitted' : '');
+  chip.className = 'pill ' + (isP ? 'teal' : isM ? 'model' : 'acc');
   $('resScore').textContent = res.score;
   $('resTotal').textContent = res.total;
   var pct = res.total ? Math.round(res.score/res.total*100) : 0;
@@ -2937,7 +3535,7 @@ function renderResult(res){
     requestAnimationFrame(function(){ fg.style.strokeDashoffset = c * (1 - Math.min(1, Math.max(0, res.score/Math.max(1,res.total)))); });
   });
   var secs = {};
-  String(res.section||'').replace('PRACTICE|','').split('|').forEach(function(part){
+  String(res.section||'').replace('PRACTICE|','').replace('MODEL|','').split('|').forEach(function(part){
     var m = part.match(/^(.*):(\d+)$/);
     if(m && m[1]) secs[m[1]] = parseInt(m[2],10);
   });
@@ -3108,6 +3706,7 @@ function bindLightbox(root){
 'use strict';
 
 function loadTeacherDash(){
+  loadDailyAdmin();
   skelRows('pendingBody', 2, 5);
   skelRows('usersBody', 4, 7);
   skelRows('recentBody', 4, 4);
@@ -3440,9 +4039,11 @@ function renderBank(){
   if(!list.length){ $('bankList').innerHTML = '<div class="empty"><div class="e-ic">🔍</div>' + (qs.length ? 'No questions match your search.' : 'The bank is empty — add your first question.') + '</div>'; return; }
   $('bankList').innerHTML = list.map(function(x){
     var topicName = (TOPICS[x.section] && TOPICS[x.section][String(x.topic||'').toUpperCase()]) || x.topic || '';
+    var diff = normalizeDifficultyClient(x.difficulty);
     return '<div class="bank-item">' +
       '<div class="bi-top"><span class="pill acc">' + esc(x.section) + '</span>' +
       (topicName ? '<span class="pill dim">' + esc(x.topic) + (topicName !== x.topic ? ' · ' + esc(topicName) : '') + '</span>' : '') +
+      '<span class="pill ' + (diff === 'easy' ? 'ok' : diff === 'hard' ? 'bad' : 'warn') + '">' + diff.toUpperCase() + '</span>' +
       '<span class="bi-acts"><button class="btn btn-sm" data-edit="' + esc(x.id) + '">Edit</button>' +
       '<button class="btn btn-sm btn-bad" data-del="' + esc(x.id) + '">Delete</button></span></div>' +
       '<div class="bi-t">' + esc(x.text) + '</div>' +
@@ -3493,6 +4094,7 @@ function openQuestionForm(existing){
   $('qfText').value = existing ? existing.text : '';
   for(var i=0;i<4;i++) $('qfOpt'+i).value = existing ? existing.opts[i] : '';
   $('qfAnswer').value = existing ? String(existing.answer) : '0';
+  $('qfDifficulty').value = existing ? normalizeDifficultyClient(existing.difficulty) : 'medium';
   $('qfSection').value = existing ? existing.section : '';
   fillTopicOptions(existing ? existing.section : '', existing ? String(existing.topic||'').toUpperCase() : '');
   $('qfExpl').value = existing ? (existing.explanation || '') : '';
@@ -3537,6 +4139,7 @@ function qfSave(){
   var topic = $('qfTopic').value;
   var expl = $('qfExpl').value.trim();
   var img = $('qfImgUrl').value.trim() || P.qfImgData || '';
+  var difficulty = $('qfDifficulty').value;
   if(!text){ showErr('qfErr', 'Enter the question text.'); return; }
   if(opts.some(function(o){ return !o; })){ showErr('qfErr', 'Fill all four options.'); return; }
   if(!section){ showErr('qfErr', 'Pick a subject.'); return; }
@@ -3561,10 +4164,10 @@ function qfSave(){
   };
   if(editId){
     callServer('updateQuestion', P.user.id, P.token, editId,
-      {text:text, opts:opts, answer:answer, section:section, topic:topic, explanation:expl, img:img})
+      {text:text, opts:opts, answer:answer, section:section, topic:topic, explanation:expl, img:img, difficulty:difficulty})
       .then(done).catch(fail);
   } else {
-    callServer('addQuestion', P.user.id, P.token, {text:text, opts:opts, answer:answer, section:section, topic:topic, explanation:expl, img:img})
+    callServer('addQuestion', P.user.id, P.token, {text:text, opts:opts, answer:answer, section:section, topic:topic, explanation:expl, img:img, difficulty:difficulty})
       .then(done).catch(fail);
   }
 }
@@ -3725,7 +4328,7 @@ function sendMsgTeacher(){
   var txt = $('mtText').value.trim();
   if(!txt){ showErr('mtErr', 'Write a message first.'); return; }
   var btn = $('btnMtSend'); btn.disabled = true; btn.innerHTML = '<span class="spin"></span> Sending…';
-  callServer('sendMessageToTeacher', P.user.id, P.token, txt).then(function(r){
+  callServer('sendStudentMessage', P.user.id, P.token, txt).then(function(r){
     btn.disabled = false; btn.innerHTML = '&#9993; Send';
     closeModal('modalMsgTeacher');
     toast(r.message || 'Message sent to your teacher.', 'ok');
@@ -3735,9 +4338,9 @@ function sendMsgTeacher(){
   });
 }
 function bulkTemplate(){
-  var csv = 'Question,A,B,C,D,Answer,Section,Topic,Explanation\n' +
-    '"What is the SI unit of force?","Newton","Joule","Watt","Pascal","A","Physics","P7","Force is measured in newtons (N)."\n' +
-    '"Which gas do plants absorb during photosynthesis?","Oxygen","Nitrogen","Carbon dioxide","Hydrogen","C","Botany","B3","CO2 is fixed into glucose."';
+  var csv = 'Question,A,B,C,D,Answer,Section,Topic,Explanation,Difficulty\n' +
+    '"What is the SI unit of force?","Newton","Joule","Watt","Pascal","A","Physics","P1","Force is measured in newtons (N).","easy"\n' +
+    '"Which gas do plants absorb during photosynthesis?","Oxygen","Nitrogen","Carbon dioxide","Hydrogen","C","Botany","B7","CO2 is fixed into glucose.","medium"';
   var blob = new Blob([csv], {type:'text/csv'});
   var a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -3923,10 +4526,14 @@ function wire(){
   $('lbImg').addEventListener('click', function(){ $('lightbox').classList.remove('on'); });
   /* student */
   $('btnStartMock').addEventListener('click', function(){ openPracticeModal({}); });
+  $('btnDailyStart').addEventListener('click', startDailySession);
+  $('btnDailyBoard').addEventListener('click', openDailyBoard);
+  $('btnSyllabus').addEventListener('click', openSyllabus);
   $('btnPractice').addEventListener('click', function(){ openPracticeModal({practice:true}); });
   $('chipAttAll').addEventListener('click', function(){ setAttemptFilter('all'); });
   $('chipAttMock').addEventListener('click', function(){ setAttemptFilter('mock'); });
   $('chipAttPrac').addEventListener('click', function(){ setAttemptFilter('practice'); });
+  $('chipAttModel').addEventListener('click', function(){ setAttemptFilter('model'); });
   /* practice modal */
   $('mCardMock').addEventListener('click', function(){ syncPrMode('mock'); });
   $('mCardPrac').addEventListener('click', function(){ syncPrMode('practice'); });
@@ -3954,6 +4561,8 @@ function wire(){
   $('rfW').addEventListener('click', function(){ setReviewFilter('wrong'); });
   $('rfS').addEventListener('click', function(){ setReviewFilter('skipped'); });
   /* teacher */
+  $('btnDailyGen').addEventListener('click', generateDailyClick);
+  $('swAutopilot').addEventListener('change', autopilotToggle);
   $('btnCsv').addEventListener('click', exportCsv);
   $('btnBank').addEventListener('click', openBank);
   $('btnBulk').addEventListener('click', function(){ clearErr('bulkErr'); openModal('modalBulk'); });
