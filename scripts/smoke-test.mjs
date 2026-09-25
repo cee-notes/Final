@@ -295,6 +295,15 @@ check('papers are difficulty-weighted (~20/60/20)',
 check('daily apportion splits 20 as 4/4/5/5/2 on both sides',
   JSON.stringify(w.apportionClient(20, [40, 40, 50, 50, 20])) === JSON.stringify([4, 4, 5, 5, 2]) &&
   JSON.stringify(ctx.apportion_(20, [40, 40, 50, 50, 20])) === JSON.stringify([4, 4, 5, 5, 2]));
+check('sheet admin console is wired (menu, dashboard, edit watcher, dialogs)',
+  ['onOpen', 'menuApproveAllPending', 'menuRegisterStudent', 'menuGenerateDaily', 'menuToggleAutopilot',
+   'menuToggleEditWatcher', 'menuRefreshSheet', 'menuShowUrl', 'menuAbout', 'registerStudentFromSheet',
+   'onSheetEdit_', 'buildDashboard_', 'formatSheets_', 'toggleAutopilot_']
+    .every((f) => typeof ctx[f] === 'function'));
+check('Users schema carries the teacher-owned Notes column',
+  ctx.TAB_SCHEMA_.Users.indexOf('Notes') >= 0 && ctx.TAB_SCHEMA_.Users.length === 12);
+check('DailyExams tab is in the schema',
+  ctx.TAB_SCHEMA_.DailyExams.join(',') === 'Date,QIds,Count,DurMin,Status,GeneratedBy,GeneratedAt');
 check('no question appears twice', new Set(clientSet.map((q) => q.id)).size === clientSet.length);
 check('a full paper is a 180-minute exam', w.ceeDurationForClient(200) === 180 && ctx.ceeDurationFor_(200) === 180);
 const tiny = bank.filter((q) => q.section === 'Physics').slice(0, 12);

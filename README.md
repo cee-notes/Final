@@ -125,8 +125,8 @@ Push to `main` and enable Pages — `index.html` is self-contained, so there is 
 3. **Deploy → New deployment → Web app** — *Execute as: Me*, *Who has access: Anyone*.
 4. Open the web app URL. The `Users`, `Questions`, `Attempts`, `Responses`, `Messages` and
    `DailyExams` tabs are created automatically (schema `CEE_TABS_READY = v3` — missing columns are
-   self-healed, the question `Difficulty` column is backfilled to `medium`) and the bank seeds
-   itself with 10 demo questions.
+   self-healed, the question `Difficulty` column is backfilled to `medium`), a live **Dashboard**
+   tab is added at the front, and the bank seeds itself with 10 demo questions.
 5. Register an account, then change its `Role` cell from `student` to `teacher` to bootstrap the
    first teacher.
 6. Optional: as a teacher, open the dashboard and switch on **Autopilot**. The first time, Google
@@ -151,6 +151,44 @@ Paste the new `.gs` over the old one and reload the web app once. Then:
 
 ---
 
+## Administering from the sheet
+
+The spreadsheet is a proper admin console, not just a database:
+
+**🎓 CEE Portal menu** (appears when you open the Sheet):
+
+| Menu item | What it does |
+| :--- | :--- |
+| ✅ Approve all pending registrations | Approves every pending student and emails each one |
+| 📋 Register a student… | Dialog that creates an **already-approved** account and emails the sign-in details — ideal for onboarding students directly |
+| 📅 Generate today's model exam | Builds today's fixed paper on demand |
+| ⏰ Toggle model-exam autopilot | Creates/removes the 20:00 time-driven trigger |
+| ⚡ Toggle auto-respond to sheet edits | Installable watcher: once enabled, **editing a registration's Status cell by hand emails the student automatically** |
+| 📊 Refresh dashboard & formatting | Rebuilds the Dashboard tab and re-applies dropdowns/colours |
+| 🔗 Show web app URL | The link to share with students |
+| ℹ️ About / quick guide | In-sheet help |
+
+**📊 Dashboard tab** — live counts (users, pending registrations, questions, difficulty split,
+attempts, today's model-exam participants, unread messages) plus a quick usage guide. All formulas,
+so they update the moment the portal writes data.
+
+**Data tabs, made readable:**
+
+- `Users` — Status/Role dropdowns; pending = yellow, approved = green, rejected = red; teachers
+  highlighted; the secret columns (`PassHash`, `SessionToken`, `SessionExpires`) are hidden; a
+  **`Notes` column is yours** (fees, class, remarks — the portal ignores it).
+- `Questions` — Section/Topic/Difficulty dropdowns; difficulty colour-coded; long text wrapped.
+- `Attempts` — practice/model attempts colour-coded.
+- `Messages` — unread rows highlighted.
+- `DailyExams` — live papers highlighted.
+
+You can manage registrations either way: through the web app's teacher dashboard (with emails), the
+sheet menu above, or by editing the Status cell directly — the login check reads the sheet, so a
+manual edit takes effect immediately. Enable the ⚡ edit watcher once if you want manual edits to
+send the approval/rejection emails too.
+
+---
+
 ## Development
 
 ```bash
@@ -165,7 +203,8 @@ npm run build:check  # CI-friendly: fails if the embed is stale
 review, practice with instant feedback, the model exam of the day (start, one-attempt rule,
 leaderboard), the syllabus browser, the teacher dashboard, autopilot and the question bank — and
 then compares the paper built by the client against the one built by the Apps Script backend,
-including the difficulty weighting and the legacy-section remap.
+including the difficulty weighting, the legacy-section remap and the sheet-admin console wiring
+(71 checks in total).
 
 ### Demo accounts (sandbox mode)
 
