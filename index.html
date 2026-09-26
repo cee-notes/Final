@@ -1642,11 +1642,45 @@ var P = {
 };
 var IS_GAS = !!(window.google && window.google.script && window.google.script.run);
 
-/* ---------- callServer: single gateway to GAS or MockApi ---------- */
+/* ---------- live Apps Script backend (used when this page is hosted outside
+   the web app, e.g. GitHub Pages). Deploy the .gs as a web app
+   ("Execute as: Me", "Who has access: Anyone") and paste the /exec URL here.
+   Set it to '' to fall back to the offline MockApi sandbox. ---------- */
+var GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbw-RTHCEahLHmuZlSIqM5LE7qL_YwVlc9-tbJDCtQyzxGB9s28XXlCB_8obRnimNuMTLA/exec';
+var USE_REMOTE = !IS_GAS && !!GAS_ENDPOINT && typeof fetch === 'function';
+var LIVE_BACKEND = IS_GAS || USE_REMOTE;
+
+/* POST with Content-Type: text/plain keeps this a "simple" CORS request, so the
+   browser never fires a preflight (Apps Script cannot answer OPTIONS). */
+function callRemote(fn, args){
+  return fetch(GAS_ENDPOINT, {
+    method: 'POST',
+    /* Apps Script 302-redirects /exec to googleusercontent.com — follow it. */
+    redirect: 'follow',
+    headers: {'Content-Type': 'text/plain;charset=utf-8'},
+    body: JSON.stringify({fn: fn, args: args})
+  }).then(function(res){
+    if(!res.ok) throw new Error('Server error (' + res.status + '). Please try again.');
+    return res.text();
+  }).then(function(txt){
+    var data;
+    try{ data = JSON.parse(txt); }
+    catch(e){ throw new Error('Could not reach the server — check the web app deployment (access must be "Anyone").'); }
+    if(!data || data.ok !== true) throw new Error((data && data.error) || 'Server error');
+    return data.result;
+  }, function(netErr){
+    if(netErr instanceof Error && /server error|reach the server/i.test(netErr.message)) throw netErr;
+    throw new Error('Network error — you appear to be offline, or the web app URL is wrong.');
+  });
+}
+
+/* ---------- callServer: single gateway to GAS, the live web app, or MockApi ---------- */
 function callServer(fn){
   var args = Array.prototype.slice.call(arguments, 1);
   var p;
-  if(IS_GAS){
+  if(USE_REMOTE){
+    p = callRemote(fn, args);
+  } else if(IS_GAS){
     p = new Promise(function(resolve, reject){
       var runner = google.script.run
         .withSuccessHandler(resolve)
@@ -2620,11 +2654,11 @@ function applyUser(){
   if(!u) return;
   $('uAva').textContent = initials(u.name);
   $('uName').textContent = u.name;
-  $('uRole').textContent = (u.role === 'teacher' ? 'Teacher' : 'Student') + (IS_GAS ? '' : ' · sandbox');
+  $('uRole').textContent = (u.role === 'teacher' ? 'Teacher' : 'Student') + (LIVE_BACKEND ? '' : ' · sandbox');
   $('chipUser').style.display = '';
   $('btnLogout').style.display = '';
   $('btnSettings').style.display = '';
-  $('btnOutbox').style.display = IS_GAS ? 'none' : '';
+  $('btnOutbox').style.display = LIVE_BACKEND ? 'none' : '';
   $('btnInbox').style.display = u.role === 'teacher' ? '' : 'none';
   if(u.role !== 'teacher'){ $('inbCount').style.display = 'none'; }
   renderOutboxBadge();
@@ -4448,7 +4482,7 @@ function changePasswordClick(){
 
 /* ---------- outbox (preview only) ---------- */
 function renderOutboxBadge(){
-  if(IS_GAS){ $('obCount').style.display = 'none'; return; }
+  if(LIVE_BACKEND){ $('obCount').style.display = 'none'; return; }
   var n = 0;
   try{ n = (MockApi._raw() && MockApi._raw().outbox ? MockApi._raw().outbox.length : 0); }catch(e){}
   $('obCount').textContent = n;
